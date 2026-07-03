@@ -1,0 +1,309 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Auth / RBAC ─────────────────────────────────────────────────────────────
+
+model User {
+  id           String    @id @default(uuid()) @db.Uuid
+  name         String    @db.VarChar(255)
+  email        String    @unique @db.VarChar(255)
+  passwordHash String    @db.Text
+  avatarUrl    String?   @db.Text
+  status       String    @default("active") @db.VarChar(30)
+  lastLoginAt  DateTime? @db.Timestamptz
+  createdAt    DateTime  @default(now()) @db.Timestamptz
+  updatedAt    DateTime  @updatedAt @db.Timestamptz
+  deletedAt    DateTime? @db.Timestamptz
+
+  userRoles           UserRole[]
+  assignedProducts    Product[]
+  createdOutfits      Outfit[]        @relation("OutfitCreatedBy")
+  updatedOutfits      Outfit[]        @relation("OutfitUpdatedBy")
+  addedOutfitProducts OutfitProduct[]
+  uploadedAssets      MediaAsset[]
+
+  @@map("users")
+}
+
+model Role {
+  id          String   @id @default(uuid()) @db.Uuid
+  name        String   @db.VarChar(100)
+  code        String   @unique @db.VarChar(80)
+  description String?  @db.Text
+  status      String   @default("active") @db.VarChar(30)
+  createdAt   DateTime @default(now()) @db.Timestamptz
+  updatedAt   DateTime @updatedAt @db.Timestamptz
+
+  userRoles       UserRole[]
+  rolePermissions RolePermission[]
+
+  @@map("roles")
+}
+
+model Permission {
+  id          String   @id @default(uuid()) @db.Uuid
+  name        String   @db.VarChar(150)
+  code        String   @unique @db.VarChar(120)
+  module      String   @db.VarChar(80)
+  description String?  @db.Text
+  createdAt   DateTime @default(now()) @db.Timestamptz
+  updatedAt   DateTime @updatedAt @db.Timestamptz
+
+  rolePermissions RolePermission[]
+
+  @@map("permissions")
+}
+
+model UserRole {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @db.Uuid
+  roleId    String   @db.Uuid
+  createdAt DateTime @default(now()) @db.Timestamptz
+
+  user User @relation(fields: [userId], references: [id])
+  role Role @relation(fields: [roleId], references: [id])
+
+  @@unique([userId, roleId])
+  @@map("user_roles")
+}
+
+model RolePermission {
+  id           String   @id @default(uuid()) @db.Uuid
+  roleId       String   @db.Uuid
+  permissionId String   @db.Uuid
+  createdAt    DateTime @default(now()) @db.Timestamptz
+
+  role       Role       @relation(fields: [roleId], references: [id])
+  permission Permission @relation(fields: [permissionId], references: [id])
+
+  @@unique([roleId, permissionId])
+  @@map("role_permissions")
+}
+
+// ─── Products & Outfits ───────────────────────────────────────────────────────
+
+model Product {
+  id                String    @id @default(uuid()) @db.Uuid
+  urlSuffix         String    @db.VarChar(120)
+  externalLinkId    String    @db.VarChar(120)
+  externalItemId    String?   @db.VarChar(120)
+  externalGroupId   String?   @db.VarChar(120)
+  externalGroupName String?   @db.VarChar(255)
+  name              String    @db.VarChar(500)
+  imageUrl          String    @db.Text
+  mockupImageUrl    String?   @db.Text
+  productDna        String?   @db.Text
+  affiliateUrl      String?   @db.Text
+  h5Link            String?   @db.Text
+  status            String    @default("active") @db.VarChar(30)
+  assignedTo        String?   @db.Uuid
+  rawJson           Json?
+  lastSyncedAt      DateTime? @db.Timestamptz
+  createdAt         DateTime  @default(now()) @db.Timestamptz
+  updatedAt         DateTime  @updatedAt @db.Timestamptz
+  deletedAt         DateTime? @db.Timestamptz
+
+  assignedUser   User?           @relation(fields: [assignedTo], references: [id])
+  outfitProducts OutfitProduct[]
+  clickLogs      ClickLog[]
+
+  @@unique([urlSuffix, externalLinkId])
+  @@index([urlSuffix])
+  @@index([status])
+  @@index([externalGroupId])
+  @@index([assignedTo])
+  @@index([lastSyncedAt])
+  @@map("products")
+}
+
+model Outfit {
+  id            String    @id @default(uuid()) @db.Uuid
+  outfitCode    String    @unique @db.Char(6)
+  name          String    @db.VarChar(255)
+  slug          String    @unique @db.VarChar(255)
+  description   String?   @db.Text
+  coverImageUrl String    @db.Text
+  styleId       String?   @db.Uuid
+  outfitTypeId  String?   @db.Uuid
+  status        String    @default("draft") @db.VarChar(30)
+  createdBy     String    @db.Uuid
+  updatedBy     String?   @db.Uuid
+  publishedAt   DateTime? @db.Timestamptz
+  createdAt     DateTime  @default(now()) @db.Timestamptz
+  updatedAt     DateTime  @updatedAt @db.Timestamptz
+  deletedAt     DateTime? @db.Timestamptz
+
+  style      Style?      @relation(fields: [styleId], references: [id])
+  outfitType OutfitType? @relation(fields: [outfitTypeId], references: [id])
+  creator    User        @relation("OutfitCreatedBy", fields: [createdBy], references: [id])
+  updater    User?       @relation("OutfitUpdatedBy", fields: [updatedBy], references: [id])
+
+  outfitProducts OutfitProduct[]
+  viewLogs       OutfitViewLog[]
+  clickLogs      ClickLog[]
+
+  @@index([status])
+  @@index([styleId])
+  @@index([outfitTypeId])
+  @@index([publishedAt])
+  @@map("outfits")
+}
+
+model OutfitProduct {
+  id        String   @id @default(uuid()) @db.Uuid
+  outfitId  String   @db.Uuid
+  productId String   @db.Uuid
+  addedBy   String?  @db.Uuid
+  createdAt DateTime @default(now()) @db.Timestamptz
+  updatedAt DateTime @updatedAt @db.Timestamptz
+
+  outfit      Outfit  @relation(fields: [outfitId], references: [id])
+  product     Product @relation(fields: [productId], references: [id])
+  addedByUser User?   @relation(fields: [addedBy], references: [id])
+
+  @@unique([outfitId, productId])
+  @@index([outfitId])
+  @@index([productId])
+  @@map("outfit_products")
+}
+
+// ─── Logs ────────────────────────────────────────────────────────────────────
+
+model OutfitViewLog {
+  id          String   @id @default(uuid()) @db.Uuid
+  outfitId    String   @db.Uuid
+  outfitCode  String   @db.Char(6)
+  sessionId   String?  @db.VarChar(120)
+  cookieId    String?  @db.VarChar(120)
+  referrer    String?  @db.Text
+  utmSource   String?  @db.VarChar(120)
+  utmMedium   String?  @db.VarChar(120)
+  utmCampaign String?  @db.VarChar(120)
+  userAgent   String?  @db.Text
+  ipHash      String?  @db.VarChar(255)
+  viewedAt    DateTime @default(now()) @db.Timestamptz
+  createdAt   DateTime @default(now()) @db.Timestamptz
+
+  outfit Outfit @relation(fields: [outfitId], references: [id])
+
+  @@index([outfitId, viewedAt])
+  @@map("outfit_view_logs")
+}
+
+model ClickLog {
+  id            String   @id @default(uuid()) @db.Uuid
+  outfitId      String   @db.Uuid
+  productId     String   @db.Uuid
+  outfitCode    String   @db.Char(6)
+  urlSuffix     String   @db.VarChar(120)
+  sessionId     String?  @db.VarChar(120)
+  cookieId      String?  @db.VarChar(120)
+  redirectUrl   String   @db.Text
+  referrer      String?  @db.Text
+  utmSource     String?  @db.VarChar(120)
+  utmMedium     String?  @db.VarChar(120)
+  utmCampaign   String?  @db.VarChar(120)
+  userAgent     String?  @db.Text
+  ipHash        String?  @db.VarChar(255)
+  isValid       Boolean  @default(true)
+  isSuspicious  Boolean  @default(false)
+  invalidReason String?  @db.VarChar(120)
+  clickedAt     DateTime @default(now()) @db.Timestamptz
+  createdAt     DateTime @default(now()) @db.Timestamptz
+
+  outfit  Outfit  @relation(fields: [outfitId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
+
+  @@index([outfitId, clickedAt])
+  @@index([productId, clickedAt])
+  @@index([sessionId])
+  @@index([cookieId])
+  @@index([isValid])
+  @@map("click_logs")
+}
+
+model SyncLog {
+  id               String    @id @default(uuid()) @db.Uuid
+  urlSuffix        String    @db.VarChar(120)
+  groupId          String?   @db.VarChar(120)
+  status           String    @db.VarChar(30)
+  totalFetched     Int       @default(0)
+  totalCreated     Int       @default(0)
+  totalUpdated     Int       @default(0)
+  totalDeactivated Int       @default(0)
+  errorMessage     String?   @db.Text
+  startedAt        DateTime  @db.Timestamptz
+  finishedAt       DateTime? @db.Timestamptz
+  createdAt        DateTime  @default(now()) @db.Timestamptz
+
+  @@map("sync_logs")
+}
+
+// ─── Media ───────────────────────────────────────────────────────────────────
+
+model MediaAsset {
+  id         String   @id @default(uuid()) @db.Uuid
+  entityType String   @db.VarChar(50)
+  entityId   String   @db.Uuid
+  mediaType  String   @db.VarChar(80)
+  fileUrl    String   @db.Text
+  fileKey    String   @db.Text
+  mimeType   String?  @db.VarChar(100)
+  fileSize   BigInt?
+  width      Int?
+  height     Int?
+  uploadedBy String?  @db.Uuid
+  createdAt  DateTime @default(now()) @db.Timestamptz
+
+  uploader User? @relation(fields: [uploadedBy], references: [id])
+
+  @@map("media_assets")
+}
+
+// ─── Taxonomy ─────────────────────────────────────────────────────────────────
+
+model Style {
+  id        String    @id @default(uuid()) @db.Uuid
+  name      String    @db.VarChar(100)
+  slug      String    @unique @db.VarChar(120)
+  status    String    @default("active") @db.VarChar(30)
+  createdAt DateTime  @default(now()) @db.Timestamptz
+  updatedAt DateTime  @updatedAt @db.Timestamptz
+  deletedAt DateTime? @db.Timestamptz
+
+  outfits Outfit[]
+
+  @@map("styles")
+}
+
+model OutfitType {
+  id        String    @id @default(uuid()) @db.Uuid
+  name      String    @db.VarChar(100)
+  slug      String    @unique @db.VarChar(120)
+  status    String    @default("active") @db.VarChar(30)
+  createdAt DateTime  @default(now()) @db.Timestamptz
+  updatedAt DateTime  @updatedAt @db.Timestamptz
+  deletedAt DateTime? @db.Timestamptz
+
+  outfits Outfit[]
+
+  @@map("outfit_types")
+}
+
+model ProductCategory {
+  id        String    @id @default(uuid()) @db.Uuid
+  name      String    @db.VarChar(100)
+  slug      String    @unique @db.VarChar(120)
+  status    String    @default("active") @db.VarChar(30)
+  createdAt DateTime  @default(now()) @db.Timestamptz
+  updatedAt DateTime  @updatedAt @db.Timestamptz
+  deletedAt DateTime? @db.Timestamptz
+
+  @@map("product_categories")
+}
