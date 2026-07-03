@@ -48,15 +48,15 @@ export default function ManagerNav() {
             key={item.href}
             href={item.href}
             className={[
-              'flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors',
+              'flex items-center gap-3 rounded-lg px-3 py-2 text-[13px] transition-colors',
               active
-                ? 'bg-slate-100 font-medium text-slate-900'
-                : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900',
+                ? 'bg-slate-950 font-semibold text-white'
+                : 'font-medium text-slate-500 hover:bg-slate-50 hover:text-slate-900',
             ].join(' ')}
           >
             <Icon
-              size={16}
-              className={active ? 'text-slate-800' : 'text-slate-400'}
+              size={15}
+              className={active ? 'text-white' : 'text-slate-400'}
               strokeWidth={active ? 2.5 : 2}
             />
             {item.label}

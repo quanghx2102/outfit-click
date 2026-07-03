@@ -6,13 +6,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { OUTFIT_STATUS } from '@/constants/status';
 import { generateSlug } from '@/lib/slug';
 import type { StyleOption, OutfitTypeOption } from '@/server/outfits/outfit.service';
 
 const selectClass =
-  'h-8 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring/50 disabled:opacity-50';
+  'h-9 w-full rounded-xl border border-slate-200 bg-white px-3 text-[13px] text-slate-700 outline-none transition-colors focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-1 disabled:opacity-50';
 
 // Serializable subset — no Date fields
 export type OutfitFormData = {
@@ -40,6 +39,30 @@ interface OutfitFormProps {
 
 type Saving = 'fields' | 'cover' | null;
 type Msg = { type: 'success' | 'error'; text: string } | null;
+
+function Panel({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm">
+      <p className="mb-4 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">{title}</p>
+      {children}
+    </div>
+  );
+}
+
+function InlineMsg({ msg }: { msg: Msg }) {
+  if (!msg) return null;
+  return (
+    <div
+      className={`rounded-xl px-4 py-2.5 text-sm font-medium ${
+        msg.type === 'success'
+          ? 'bg-emerald-50 text-emerald-700'
+          : 'bg-red-50 text-red-700'
+      }`}
+    >
+      {msg.text}
+    </div>
+  );
+}
 
 export default function OutfitForm({
   mode,
@@ -96,8 +119,6 @@ export default function OutfitForm({
     setCoverPreview(URL.createObjectURL(file));
   }
 
-  // ── Create: single multipart POST ────────────────────────────────────────────
-
   async function handleCreate() {
     if (!name.trim()) { showMsg('error', 'Name is required.'); return; }
     if (!slug.trim()) { showMsg('error', 'Slug is required.'); return; }
@@ -128,8 +149,6 @@ export default function OutfitForm({
       setSaving(null);
     }
   }
-
-  // ── Edit: save text fields via PATCH ─────────────────────────────────────────
 
   async function handleSaveFields() {
     if (!name.trim()) { showMsg('error', 'Name is required.'); return; }
@@ -165,8 +184,6 @@ export default function OutfitForm({
     }
   }
 
-  // ── Edit: upload new cover via media service ──────────────────────────────────
-
   async function handleCoverUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -197,7 +214,6 @@ export default function OutfitForm({
     }
   }
 
-  // Status options shown depend on permissions
   const statusOptions = (Object.values(OUTFIT_STATUS) as string[]).filter((s) => {
     if (s === 'deleted') return false;
     if (s === 'active' && !canPublish) return false;
@@ -206,82 +222,67 @@ export default function OutfitForm({
   });
 
   return (
-    <div className="flex flex-col gap-6">
-      {msg && (
-        <div
-          className={`rounded-lg px-4 py-2.5 text-sm ${
-            msg.type === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'
-          }`}
-        >
-          {msg.text}
-        </div>
-      )}
+    <div className="flex flex-col gap-5">
+      <InlineMsg msg={msg} />
 
-      {/* Cover image */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Cover Image</CardTitle>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-4">
-          {(coverPreview || initialData?.coverImageUrl) && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={coverPreview ?? initialData!.coverImageUrl}
-              alt="Cover preview"
-              className="h-48 w-auto max-w-sm rounded-lg border object-cover"
+      {/* ── Cover Image ── */}
+      <Panel title="Cover Image">
+        {(coverPreview ?? initialData?.coverImageUrl) && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={coverPreview ?? initialData!.coverImageUrl}
+            alt="Cover preview"
+            className="mb-4 h-48 w-auto max-w-xs rounded-xl border border-slate-100 object-cover"
+          />
+        )}
+
+        {isCreate ? (
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="cover-create" className="text-[12px] font-medium text-slate-600">
+              Cover Image <span className="text-red-400">*</span>
+            </Label>
+            <input
+              id="cover-create"
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              onChange={handleCoverSelect}
+              disabled={isBusy}
+              className="text-sm text-slate-500 file:mr-3 file:rounded-xl file:border file:border-slate-200 file:bg-white file:px-3 file:py-1 file:text-[12px] file:font-medium file:text-slate-600 file:transition-colors hover:file:border-slate-950 hover:file:text-slate-950"
             />
-          )}
-
-          {isCreate ? (
-            <div className="flex flex-col gap-1">
-              <Label htmlFor="cover-create">
-                Cover Image <span className="text-destructive">*</span>
-              </Label>
+            <p className="text-[11px] text-slate-400">JPG, PNG, or WEBP. Max 5MB.</p>
+          </div>
+        ) : (
+          canUpdate && (
+            <div className="flex items-center gap-3">
               <input
-                id="cover-create"
+                ref={coverInputRef}
                 type="file"
                 accept="image/jpeg,image/png,image/webp"
-                onChange={handleCoverSelect}
+                className="hidden"
+                onChange={handleCoverUpload}
                 disabled={isBusy}
-                className="text-sm"
               />
-              <p className="text-xs text-muted-foreground">JPG, PNG, or WEBP. Max 5MB.</p>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={isBusy}
+                onClick={() => coverInputRef.current?.click()}
+                className="rounded-xl border-slate-200 text-slate-700 hover:border-slate-950 hover:text-slate-950"
+              >
+                {saving === 'cover' ? 'Uploading…' : 'Replace Cover'}
+              </Button>
+              <span className="text-[11px] text-slate-400">JPG, PNG, or WEBP. Max 5MB.</span>
             </div>
-          ) : (
-            canUpdate && (
-              <div className="flex items-center gap-3">
-                <input
-                  ref={coverInputRef}
-                  type="file"
-                  accept="image/jpeg,image/png,image/webp"
-                  className="hidden"
-                  onChange={handleCoverUpload}
-                  disabled={isBusy}
-                />
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={isBusy}
-                  onClick={() => coverInputRef.current?.click()}
-                >
-                  {saving === 'cover' ? 'Uploading…' : 'Replace Cover'}
-                </Button>
-                <span className="text-xs text-muted-foreground">JPG, PNG, or WEBP. Max 5MB.</span>
-              </div>
-            )
-          )}
-        </CardContent>
-      </Card>
+          )
+        )}
+      </Panel>
 
-      {/* Basic info */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Basic Info</CardTitle>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-4">
+      {/* ── Basic Info ── */}
+      <Panel title="Basic Info">
+        <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="outfit-name">
-              Name <span className="text-destructive">*</span>
+            <Label htmlFor="outfit-name" className="text-[12px] font-medium text-slate-600">
+              Name <span className="text-red-400">*</span>
             </Label>
             <Input
               id="outfit-name"
@@ -290,12 +291,13 @@ export default function OutfitForm({
               placeholder="e.g. Phối đồ đi chơi nữ năng động"
               disabled={(!isCreate && !canUpdate) || isBusy}
               maxLength={255}
+              className="rounded-xl border-slate-200 text-[13px] text-slate-700 placeholder:text-slate-300 focus-visible:ring-slate-950"
             />
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="outfit-slug">
-              Slug <span className="text-destructive">*</span>
+            <Label htmlFor="outfit-slug" className="text-[12px] font-medium text-slate-600">
+              Slug <span className="text-red-400">*</span>
             </Label>
             <Input
               id="outfit-slug"
@@ -304,14 +306,17 @@ export default function OutfitForm({
               placeholder="phoi-do-di-choi-nu-nang-dong"
               disabled={(!isCreate && !canUpdate) || isBusy}
               maxLength={255}
+              className="rounded-xl border-slate-200 font-mono text-[13px] text-slate-700 placeholder:text-slate-300 focus-visible:ring-slate-950"
             />
-            <p className="text-xs text-muted-foreground">
-              Auto-generated from name. Lowercase letters, digits, hyphens only. Must be unique.
+            <p className="text-[11px] text-slate-400">
+              Auto-generated from name. Lowercase, digits, hyphens. Must be unique.
             </p>
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="outfit-description">Description</Label>
+            <Label htmlFor="outfit-description" className="text-[12px] font-medium text-slate-600">
+              Description
+            </Label>
             <Textarea
               id="outfit-description"
               value={description}
@@ -319,19 +324,19 @@ export default function OutfitForm({
               placeholder="Mô tả outfit, phong cách, dịp phù hợp..."
               rows={5}
               disabled={(!isCreate && !canUpdate) || isBusy}
+              className="rounded-xl border-slate-200 text-[13px] text-slate-700 placeholder:text-slate-300 focus-visible:ring-slate-950"
             />
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </Panel>
 
-      {/* Classification */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Classification</CardTitle>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-4">
+      {/* ── Classification ── */}
+      <Panel title="Classification">
+        <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="outfit-style">Style</Label>
+            <Label htmlFor="outfit-style" className="text-[12px] font-medium text-slate-600">
+              Style
+            </Label>
             <select
               id="outfit-style"
               value={styleId}
@@ -349,7 +354,9 @@ export default function OutfitForm({
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="outfit-type">Outfit Type</Label>
+            <Label htmlFor="outfit-type" className="text-[12px] font-medium text-slate-600">
+              Outfit Type
+            </Label>
             <select
               id="outfit-type"
               value={outfitTypeId}
@@ -365,16 +372,13 @@ export default function OutfitForm({
               ))}
             </select>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </Panel>
 
-      {/* Status — edit only, shown when user has update permission */}
+      {/* ── Status (edit only) ── */}
       {!isCreate && canUpdate && statusOptions.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Status</CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-3">
+        <Panel title="Status">
+          <div className="flex flex-col gap-3">
             <select
               value={status}
               onChange={(e) => setStatus(e.target.value)}
@@ -387,7 +391,6 @@ export default function OutfitForm({
                 </option>
               ))}
             </select>
-            {/* Quick-action buttons for publish/hide */}
             {(canPublish || canHide) && (
               <div className="flex flex-wrap gap-2">
                 {canPublish && (
@@ -396,7 +399,7 @@ export default function OutfitForm({
                     variant="default"
                     disabled={isBusy || status === 'active'}
                     onClick={() => setStatus('active')}
-                    className="text-xs"
+                    className="rounded-xl bg-emerald-600 text-[12px] text-white hover:bg-emerald-700"
                   >
                     Set Publish
                   </Button>
@@ -407,7 +410,7 @@ export default function OutfitForm({
                     variant="outline"
                     disabled={isBusy || status === 'hidden'}
                     onClick={() => setStatus('hidden')}
-                    className="text-xs"
+                    className="rounded-xl border-slate-200 text-[12px] text-slate-600 hover:text-slate-950"
                   >
                     Set Hidden
                   </Button>
@@ -418,24 +421,28 @@ export default function OutfitForm({
                     variant="outline"
                     disabled={isBusy || status === 'draft'}
                     onClick={() => setStatus('draft')}
-                    className="text-xs"
+                    className="rounded-xl border-slate-200 text-[12px] text-slate-600 hover:text-slate-950"
                   >
                     Set Draft
                   </Button>
                 )}
               </div>
             )}
-            <p className="text-xs text-muted-foreground">
+            <p className="text-[11px] text-slate-400">
               Click &ldquo;Save Changes&rdquo; to apply status update.
             </p>
-          </CardContent>
-        </Card>
+          </div>
+        </Panel>
       )}
 
-      {/* Submit button */}
+      {/* ── Submit ── */}
       {(isCreate || canUpdate) && (
         <div className="flex justify-end">
-          <Button disabled={isBusy} onClick={isCreate ? handleCreate : handleSaveFields}>
+          <Button
+            disabled={isBusy}
+            onClick={isCreate ? handleCreate : handleSaveFields}
+            className="rounded-xl bg-slate-950 px-6 text-white hover:bg-slate-800"
+          >
             {saving === 'fields'
               ? isCreate
                 ? 'Creating…'

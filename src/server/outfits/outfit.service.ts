@@ -378,6 +378,61 @@ export async function countOutfitProducts(outfitId: string): Promise<number> {
   return prisma.outfitProduct.count({ where: { outfitId } });
 }
 
+export interface PublishValidationError {
+  field: string;
+  message: string;
+}
+
+export async function validateOutfitForPublish(
+  outfitId: string,
+): Promise<PublishValidationError[]> {
+  const outfit = await prisma.outfit.findUnique({
+    where: { id: outfitId },
+    select: {
+      name: true,
+      coverImageUrl: true,
+      _count: { select: { outfitProducts: true } },
+      outfitProducts: {
+        take: 1,
+        select: {
+          product: { select: { affiliateUrl: true, h5Link: true } },
+        },
+      },
+    },
+  });
+
+  if (!outfit) return [{ field: 'outfit', message: 'Outfit not found.' }];
+
+  const errs: PublishValidationError[] = [];
+
+  if (!outfit.name || !outfit.name.trim()) {
+    errs.push({ field: 'name', message: 'Outfit must have a name.' });
+  }
+  if (!outfit.coverImageUrl || !outfit.coverImageUrl.trim()) {
+    errs.push({ field: 'coverImageUrl', message: 'Outfit must have a cover image.' });
+  }
+  if (outfit._count.outfitProducts === 0) {
+    errs.push({ field: 'products', message: 'Outfit must have at least 1 product.' });
+  } else {
+    // Check that at least one product in the outfit has a redirect URL
+    const allProducts = await prisma.outfitProduct.findMany({
+      where: { outfitId },
+      select: { product: { select: { affiliateUrl: true, h5Link: true } } },
+    });
+    const hasLink = allProducts.some(
+      (op) => op.product.affiliateUrl || op.product.h5Link,
+    );
+    if (!hasLink) {
+      errs.push({
+        field: 'products',
+        message: 'At least one product must have an affiliate URL or h5Link.',
+      });
+    }
+  }
+
+  return errs;
+}
+
 // ─── Public detail ────────────────────────────────────────────────────────────
 
 export interface PublicOutfitProduct {

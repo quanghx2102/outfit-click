@@ -5,7 +5,6 @@ import { getUserPermissions } from '@/lib/permissions';
 import { getProductById } from '@/server/products/product.service';
 import { PERMISSIONS } from '@/constants/permissions';
 import { MANAGER_ROUTES } from '@/constants/routes';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import PageHeader from '@/components/manager/PageHeader';
 import StatusBadge from '@/components/manager/StatusBadge';
 import ProductEditForm from '@/components/manager/ProductEditForm';
@@ -17,6 +16,15 @@ function formatDate(date: Date | null): string {
   if (!date) return '—';
   return new Intl.DateTimeFormat('vi-VN', { dateStyle: 'short', timeStyle: 'short' }).format(
     new Date(date),
+  );
+}
+
+function InfoPanel({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm">
+      <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">{title}</p>
+      {children}
+    </div>
   );
 }
 
@@ -33,7 +41,7 @@ export default async function ManagerProductDetailPage({ params }: Props) {
   if (scope === 'none') {
     return (
       <main className="p-6 lg:p-8">
-        <p className="text-sm text-slate-500">You do not have permission to view this product.</p>
+        <p className="text-sm text-slate-400">You do not have permission to view this product.</p>
       </main>
     );
   }
@@ -46,40 +54,40 @@ export default async function ManagerProductDetailPage({ params }: Props) {
   const canUploadMockup = permissions.includes(PERMISSIONS.PRODUCTS_UPLOAD_MOCKUP);
 
   return (
-    <main className="flex flex-col gap-6 p-6 lg:p-8">
-      {/* Back nav */}
+    <main className="flex flex-col gap-5 p-6 lg:p-8">
+      {/* Back */}
       <Link
         href={MANAGER_ROUTES.PRODUCTS}
-        className="w-fit text-sm text-slate-500 hover:text-slate-900 hover:underline"
+        className="w-fit text-[12px] font-medium text-slate-400 transition-colors hover:text-slate-900"
       >
         ← Back to Products
       </Link>
 
-      {/* Header with status indicators */}
+      {/* Header */}
       <PageHeader
         title={product.name}
         actions={
           <div className="flex flex-wrap items-center gap-2">
             <StatusBadge status={product.status} />
             {product.productDna ? (
-              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-medium text-emerald-700">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-600">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
                 DNA
               </span>
             ) : (
-              <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-500">
-                <span className="h-1.5 w-1.5 rounded-full bg-slate-300" />
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-50 px-2.5 py-0.5 text-[11px] font-medium text-slate-400">
+                <span className="h-1.5 w-1.5 rounded-full bg-slate-200" />
                 No DNA
               </span>
             )}
             {product.mockupImageUrl ? (
-              <span className="inline-flex items-center gap-1 rounded-full bg-sky-100 px-2.5 py-0.5 text-xs font-medium text-sky-700">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-sky-50 px-2.5 py-0.5 text-[11px] font-semibold text-sky-600">
                 <span className="h-1.5 w-1.5 rounded-full bg-sky-500" />
                 Mockup
               </span>
             ) : (
-              <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-500">
-                <span className="h-1.5 w-1.5 rounded-full bg-slate-300" />
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-50 px-2.5 py-0.5 text-[11px] font-medium text-slate-400">
+                <span className="h-1.5 w-1.5 rounded-full bg-slate-200" />
                 No Mockup
               </span>
             )}
@@ -87,8 +95,8 @@ export default async function ManagerProductDetailPage({ params }: Props) {
         }
       />
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_300px]">
-        {/* Left: editable form */}
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-[1fr_280px]">
+        {/* Left: form */}
         <ProductEditForm
           product={{
             id: product.id,
@@ -105,109 +113,94 @@ export default async function ManagerProductDetailPage({ params }: Props) {
 
         {/* Right: read-only metadata */}
         <div className="flex flex-col gap-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Source Info</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <dl className="flex flex-col gap-2 text-sm">
+          <InfoPanel title="Source Info">
+            <dl className="flex flex-col gap-2.5 text-[13px]">
+              <div className="flex justify-between gap-2">
+                <dt className="shrink-0 text-slate-400">Source</dt>
+                <dd>
+                  <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-[11px] font-semibold text-slate-600">
+                    {product.urlSuffix}
+                  </span>
+                </dd>
+              </div>
+              {product.externalGroupName && (
                 <div className="flex justify-between gap-2">
-                  <dt className="shrink-0 text-muted-foreground">Source</dt>
-                  <dd>
-                    <span className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-700">
-                      {product.urlSuffix}
-                    </span>
-                  </dd>
+                  <dt className="shrink-0 text-slate-400">Group</dt>
+                  <dd className="text-right text-[11px] text-slate-700">{product.externalGroupName}</dd>
                 </div>
-                {product.externalGroupName && (
-                  <div className="flex justify-between gap-2">
-                    <dt className="shrink-0 text-muted-foreground">Group</dt>
-                    <dd className="text-right text-xs">{product.externalGroupName}</dd>
-                  </div>
-                )}
+              )}
+              <div className="flex justify-between gap-2">
+                <dt className="shrink-0 text-slate-400">Link ID</dt>
+                <dd className="break-all font-mono text-[11px] text-slate-600">{product.externalLinkId}</dd>
+              </div>
+              {product.externalItemId && (
                 <div className="flex justify-between gap-2">
-                  <dt className="shrink-0 text-muted-foreground">Link ID</dt>
-                  <dd className="break-all font-mono text-xs">{product.externalLinkId}</dd>
+                  <dt className="shrink-0 text-slate-400">Item ID</dt>
+                  <dd className="break-all font-mono text-[11px] text-slate-600">{product.externalItemId}</dd>
                 </div>
-                {product.externalItemId && (
-                  <div className="flex justify-between gap-2">
-                    <dt className="shrink-0 text-muted-foreground">Item ID</dt>
-                    <dd className="break-all font-mono text-xs">{product.externalItemId}</dd>
-                  </div>
-                )}
-                {product.externalGroupId && (
-                  <div className="flex justify-between gap-2">
-                    <dt className="shrink-0 text-muted-foreground">Group ID</dt>
-                    <dd className="break-all font-mono text-xs">{product.externalGroupId}</dd>
-                  </div>
-                )}
-              </dl>
-            </CardContent>
-          </Card>
+              )}
+              {product.externalGroupId && (
+                <div className="flex justify-between gap-2">
+                  <dt className="shrink-0 text-slate-400">Group ID</dt>
+                  <dd className="break-all font-mono text-[11px] text-slate-600">{product.externalGroupId}</dd>
+                </div>
+              )}
+            </dl>
+          </InfoPanel>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Links</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <dl className="flex flex-col gap-3 text-sm">
+          <InfoPanel title="Links">
+            <dl className="flex flex-col gap-3 text-[13px]">
+              <div className="flex flex-col gap-1">
+                <dt className="text-slate-400">Affiliate URL</dt>
+                <dd>
+                  {product.affiliateUrl ? (
+                    <a
+                      href={product.affiliateUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="break-all text-[11px] text-sky-500 hover:underline"
+                    >
+                      {product.affiliateUrl}
+                    </a>
+                  ) : (
+                    <span className="text-[11px] text-slate-300">—</span>
+                  )}
+                </dd>
+              </div>
+              {product.h5Link && (
                 <div className="flex flex-col gap-1">
-                  <dt className="text-muted-foreground">Affiliate URL</dt>
+                  <dt className="text-slate-400">H5 / Deep Link</dt>
                   <dd>
-                    {product.affiliateUrl ? (
-                      <a
-                        href={product.affiliateUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="break-all text-xs text-blue-600 hover:underline"
-                      >
-                        {product.affiliateUrl}
-                      </a>
-                    ) : (
-                      <span className="text-xs text-muted-foreground">—</span>
-                    )}
+                    <a
+                      href={product.h5Link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="break-all text-[11px] text-sky-500 hover:underline"
+                    >
+                      {product.h5Link}
+                    </a>
                   </dd>
                 </div>
-                {product.h5Link && (
-                  <div className="flex flex-col gap-1">
-                    <dt className="text-muted-foreground">H5 / Deep Link</dt>
-                    <dd>
-                      <a
-                        href={product.h5Link}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="break-all text-xs text-blue-600 hover:underline"
-                      >
-                        {product.h5Link}
-                      </a>
-                    </dd>
-                  </div>
-                )}
-              </dl>
-            </CardContent>
-          </Card>
+              )}
+            </dl>
+          </InfoPanel>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Timestamps</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <dl className="flex flex-col gap-2 text-sm">
-                <div className="flex justify-between gap-2">
-                  <dt className="text-muted-foreground">Last Synced</dt>
-                  <dd className="text-xs">{formatDate(product.lastSyncedAt)}</dd>
-                </div>
-                <div className="flex justify-between gap-2">
-                  <dt className="text-muted-foreground">Created</dt>
-                  <dd className="text-xs">{formatDate(product.createdAt)}</dd>
-                </div>
-                <div className="flex justify-between gap-2">
-                  <dt className="text-muted-foreground">Updated</dt>
-                  <dd className="text-xs">{formatDate(product.updatedAt)}</dd>
-                </div>
-              </dl>
-            </CardContent>
-          </Card>
+          <InfoPanel title="Timestamps">
+            <dl className="flex flex-col gap-2.5 text-[13px]">
+              <div className="flex justify-between gap-2">
+                <dt className="text-slate-400">Last Synced</dt>
+                <dd className="text-[11px] text-slate-600">{formatDate(product.lastSyncedAt)}</dd>
+              </div>
+              <div className="flex justify-between gap-2">
+                <dt className="text-slate-400">Created</dt>
+                <dd className="text-[11px] text-slate-600">{formatDate(product.createdAt)}</dd>
+              </div>
+              <div className="flex justify-between gap-2">
+                <dt className="text-slate-400">Updated</dt>
+                <dd className="text-[11px] text-slate-600">{formatDate(product.updatedAt)}</dd>
+              </div>
+            </dl>
+          </InfoPanel>
         </div>
       </div>
     </main>

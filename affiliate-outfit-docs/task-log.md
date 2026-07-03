@@ -36,6 +36,138 @@
 
 ---
 
+## 2026-07-03 — UI-PREMIUM — Full UI Upgrade: Public Site + Manager SaaS Dashboard
+
+### Files changed
+
+**Public Site:**
+- `src/components/public/PublicHeader.tsx`: **UPGRADE** — backdrop-blur sticky header; logo `font-black tracking-[0.22em]`; nav links `text-xs font-semibold uppercase tracking-widest`; removed border-b blue, replaced with slate-100
+- `src/app/(public)/outfits/page.tsx`: **UPGRADE** — Full hero redesign: `pt-20 pb-16` large centred section, eyebrow label `tracking-[0.3em]`, H1 `text-4xl/5xl/6xl`, subtitle `text-slate-400 sm:text-lg`, CTA pill `rounded-full border`; section divider; pagination `rounded-full` pills with SVG arrows; empty state centered with placeholder div
+- `src/components/public/OutfitCard.tsx`: **UPGRADE** — Tag badge slides up from bottom on hover (translate + opacity), gradient overlay on hover only; image scale `duration-700`; card lift `-translate-y-1.5 shadow-xl`; code `text-[10px] font-semibold tracking-[0.18em]`; focus ring `ring-offset-4`
+- `src/components/public/OutfitGrid.tsx`: **UPGRADE** — Gap increased: `gap-x-4 gap-y-10 sm:gap-x-5 lg:gap-x-6` for airier lookbook feel
+- `src/components/public/PublicFooter.tsx`: **UPGRADE** — `border-t slate-100`; brand `font-black tracking-[0.28em]`; nav `text-xs uppercase tracking-widest`; copyright `text-[10px]`
+- `src/components/public/SeoContentBlock.tsx`: **UPGRADE** — `bg-slate-50/60`; eyebrow `text-[10px] tracking-[0.25em]`; heading `text-lg`; `text-slate-400` body text
+- `src/components/public/OutfitHero.tsx`: **UPGRADE** — Breadcrumb `text-xs font-semibold uppercase tracking-widest`; cover `shadow-sm`; tags border-only pill style; H1 `text-3xl/4xl/5xl`; code row with horizontal rule accent; info panel `gap-10 md:gap-14`
+- `src/components/public/ProductClickCard.tsx`: **UPGRADE** — Badge text changed "Shop" → "View"; hover badge `tracking-[0.2em]`; duration-700 image scale; lift `-translate-y-1 shadow-lg`
+- `src/components/public/RelatedOutfits.tsx`: **UPGRADE** — Centered label with horizontal rules instead of `text-xl` heading; `mt-20` top margin
+- `src/app/(public)/outfit/[slugCode]/page.tsx`: **UPGRADE** — Items section header changed to centered divider + label + count badge; `py-12 sm:py-16`; "How to style" info block when description present; `gap-x-4 gap-y-8` product grid
+
+**Manager Shell:**
+- `src/components/manager/ManagerSidebar.tsx`: **UPGRADE** — Border `slate-100` (từ `slate-200`); logo `font-black tracking-[0.22em]`; avatar `bg-slate-950`; user name `font-semibold text-[13px]`; email `text-[11px]`; user block padding tighter
+- `src/components/manager/ManagerTopbar.tsx`: **UPGRADE** — "Manager" label `font-bold uppercase tracking-[0.2em] text-slate-300`; avatar `bg-slate-950 font-bold`; user name `text-[13px] text-slate-600`
+- `src/components/manager/ManagerNav.tsx`: **UPGRADE** — Active state: `bg-slate-950 text-white` (từ `bg-slate-100 text-slate-900`) — bolder active indicator; icon active `text-white`; nav item `text-[13px]`; rounded-lg (từ rounded-md)
+- `src/components/manager/LogoutButton.tsx`: **UPGRADE** — `rounded-lg text-[12px] font-medium`; text "Sign out" (từ "Đăng xuất"); `hover:bg-slate-50 hover:text-slate-700`
+- `src/components/manager/PageHeader.tsx`: **UPGRADE** — Border `slate-100` (từ `slate-200`); description `text-slate-400` (từ `text-slate-500`); title `tracking-tight`
+
+**Manager Dashboard:**
+- `src/app/manager/(protected)/page.tsx`: **UPGRADE** — `StatCard` dùng `rounded-2xl border-slate-100 shadow-sm hover:shadow-md`; icon containers `rounded-xl`; value `tracking-tight`; label `tracking-[0.2em]`; tips list với `→` prefix và `font-semibold` highlight; empty state `h-14 w-14 rounded-full bg-slate-50`
+
+**Manager Products:**
+- `src/components/manager/ProductTable.tsx`: **UPGRADE** — `rounded-2xl border-slate-100 shadow-sm`; all TableHead `text-[10px] font-bold uppercase tracking-widest text-slate-400`; thumbnail `h-14 w-14 rounded-xl border-slate-100`; DNA/Mockup indicators lighter colors (`text-slate-300` khi thiếu thay vì `text-slate-400`); name link `hover:text-slate-500`; row border `slate-100` hover `slate-50/60`
+- `src/components/manager/ProductEditForm.tsx`: **UPGRADE** — Bỏ hoàn toàn shadcn `Card/CardContent/CardHeader/CardTitle`; thay bằng `Panel` component nội bộ `rounded-2xl border-slate-100 shadow-sm`; section titles `text-[10px] font-bold uppercase tracking-[0.2em]`; buttons `rounded-xl bg-slate-950`; textarea `rounded-xl border-slate-200`; image border `border-slate-100`; `InlineMsg` helper với emerald/red styled alerts
+- `src/app/manager/(protected)/products/[id]/page.tsx`: **UPGRADE** — Bỏ shadcn `Card` imports; dùng local `InfoPanel` component; back link `text-[12px]`; indicator badges dùng `-50` bg (`bg-emerald-50`, `bg-sky-50`, `bg-slate-50`)
+
+**Manager Outfits:**
+- `src/components/manager/OutfitTable.tsx`: **UPGRADE** — `rounded-2xl border-slate-100 shadow-sm`; TableHead style nhất quán với ProductTable; thumbnail `h-14 w-14 rounded-xl border-slate-100`; code `font-semibold`; style/type tags `font-semibold text-slate-500`; Edit button tighter `h-7`
+- `src/components/manager/OutfitForm.tsx`: **UPGRADE** — Bỏ hoàn toàn shadcn `Card`; dùng `Panel` component nội bộ; inputs/select/textarea `rounded-xl border-slate-200 focus-visible:ring-slate-950`; file input custom styling với `hover:file:border-slate-950`; status buttons `rounded-xl`; submit button `rounded-xl bg-slate-950 px-6`; `InlineMsg` helper
+- `src/components/manager/ProductPicker.tsx`: **UPGRADE** — Bỏ shadcn `Card` và `Badge`; dùng `rounded-2xl border-slate-100 bg-white p-5 shadow-sm` panel; section title `text-[10px] font-bold uppercase tracking-[0.2em]`; picker product card: `border-slate-100 hover:border-slate-200`; added state `border-emerald-200 bg-emerald-50/50`; buttons `rounded-xl bg-slate-950`; source pill `rounded-full bg-slate-100 font-semibold`; `ActionMsg` helper
+- `src/app/manager/(protected)/outfits/[id]/page.tsx`: **UPGRADE** — Bỏ shadcn `Card`; dùng local `InfoPanel`; back link `text-[12px]`; outfitCode badge `rounded-full bg-slate-100 font-mono font-semibold`
+- `src/app/manager/(protected)/outfits/new/page.tsx`: **UPGRADE** — back link `text-[12px] font-medium text-slate-400`
+
+### Summary
+
+Toàn bộ UI đã được nâng cấp từ "MVP clean" → "premium fashion / SaaS dashboard":
+
+**Public site improvements:**
+- Hero: từ simple H1 centered → full editorial hero với large headline 4xl-6xl responsive, eyebrow label, pill CTA
+- OutfitCard: tag badge animation (slide-up on hover), image scale duration-700, lift shadow-xl
+- OutfitHero: cover shadow, tags border-only pill, H1 up to 5xl lg, outfit code with rule accent
+- ProductClickCard: duration-700 image, "View" badge
+- RelatedOutfits: editorial section divider với horizontal rules
+- Detail page: items section header centered divider, "How to style" block, tighter product grid gaps
+- Footer: fashion brand aesthetic uppercase tracking
+
+**Manager improvements:**
+- Nav active state: `bg-slate-950 text-white` — mạnh mẽ, rõ ràng active indicator
+- Tất cả stat cards, tables, panels: `rounded-2xl border-slate-100 shadow-sm`
+- Bỏ hoàn toàn shadcn `Card` component khỏi ProductEditForm, OutfitForm, ProductPicker, product detail, outfit edit — thay bằng clean white panels nhất quán
+- Tables: `rounded-2xl`, header `text-[10px] tracking-widest`, thumbnails `h-14 w-14`
+- Buttons: tất cả `rounded-xl`, primary `bg-slate-950`
+
+### Existing behavior preserved
+
+- ✅ Tất cả data fetching (`listPublicOutfits`, `getPublicOutfitDetail`, `getRelatedOutfits`, etc.) — không chạm
+- ✅ Tracking redirect `/go/[outfitCode]/[productId]` — không chạm
+- ✅ ProductClickCard `redirectPath` → `/go/` — không chạm
+- ✅ TrackOutfitView — không chạm
+- ✅ `OutfitCard` href `/outfit/${slug}-${outfitCode.toLowerCase()}` — không chạm
+- ✅ Auth, permissions, API routes, Prisma schema — không chạm
+- ✅ JSON-LD structured data — không chạm
+- ✅ `ProductEditForm` save handlers (patchProduct, upload mockup) — không chạm
+- ✅ `OutfitForm` save/create/upload handlers — không chạm
+- ✅ `ProductPicker` add/remove handlers, API calls — không chạm
+- ✅ Không thêm package mới
+
+### Tests/checks run
+
+- `npm run lint` — 0 errors, 7 warnings (pre-existing từ test files) ✅
+- `npm run build` — 34 routes compiled, TypeScript 0 errors ✅
+
+### Risks / Notes
+
+- `ProductEditForm` và `OutfitForm` không còn dùng shadcn `Card` — visual giờ dùng `Panel` nội bộ. Nếu shadcn Card được cập nhật theme sau này, sẽ không tự động sync — nhưng đây là intention (full design control).
+- Không có breaking changes về data hay navigation.
+
+---
+
+## 2026-07-03 — BACKEND-MVP — Backend Modules 1–5: Manual Sync, Product/Outfit/Media/Tracking
+
+### Files changed
+
+- `src/app/api/manager/products/sync/route.ts`: **TẠO MỚI** — POST /api/manager/products/sync — manual sync từ Manager: nhận urlSuffix+groupId từ body, gọi API client, upsert products, mark missing, ghi sync_log, trả totalFetched/Created/Updated/Deactivated/errors
+- `src/app/api/manager/products/route.ts`: **UPGRADE** — GET thêm filter `groupId`, `hasMockup`, `hasProductDna` (parseBoolParam helper); truyền vào `listProducts()`
+- `src/app/api/manager/products/[id]/route.ts`: **UPGRADE** — GET thêm `?rawJson=1` → trả rawJson (admin-only); PATCH thêm `mockupImageUrl` field với permission check `products.upload_mockup`
+- `src/app/api/manager/products/[id]/mockup/route.ts`: **TẠO MỚI** — POST /api/manager/products/[id]/mockup — upload mockup qua media.service, update product.mockupImageUrl, ghi media_asset; permission: media.upload + products.upload_mockup
+- `src/app/api/manager/outfits/[id]/publish/route.ts`: **TẠO MỚI** — POST /api/manager/outfits/[id]/publish — validate trước publish (name/cover/products/affiliateUrl), gọi updateOutfitFields({status:'active'}), permission: outfits.publish
+- `src/app/api/manager/outfits/[id]/hide/route.ts`: **TẠO MỚI** — POST /api/manager/outfits/[id]/hide — đặt status='hidden', permission: outfits.hide
+- `src/app/api/manager/outfits/[id]/cover/route.ts`: **TẠO MỚI** — POST /api/manager/outfits/[id]/cover — upload cover qua media.service, update outfit.coverImageUrl, ghi media_asset; permission: media.upload + outfits.update
+- `src/server/products/product.service.ts`: **UPGRADE** — `UpdateProductInput` thêm `mockupImageUrl`; `updateProductFields` handle mockupImageUrl; `ListProductsParams` thêm `externalGroupId`, `hasMockup`, `hasProductDna`; `listProducts` filter by new params; thêm `getProductRawJson()`
+- `src/server/outfits/outfit.service.ts`: **UPGRADE** — thêm `PublishValidationError` type + `validateOutfitForPublish()`: check name/coverImageUrl/product count/affiliate URL trước publish
+
+### Summary
+
+- **MODULE 1 — Manual Sync**: `POST /api/manager/products/sync` — Manager có thể trigger sync thủ công với urlSuffix+groupId, override affiliateId/userId/cid/language/limit tùy muốn. Reuse hoàn toàn client + mapper + repository hiện có. Ghi sync_log, trả kết quả JSON. Không dùng lock vì manual sync là intentional.
+- **MODULE 2 — Product Management**: GET products nay có `groupId`, `hasMockup`, `hasProductDna` filter. GET product detail có `?rawJson=1` option. PATCH product nay chấp nhận `mockupImageUrl`. Thêm `POST /:id/mockup` để upload ảnh mockup qua R2 → update DB.
+- **MODULE 3 — Outfit Management**: `POST /:id/publish` với full validation (name/cover/products/link). `POST /:id/hide`. `POST /:id/cover` upload cover R2 → update DB. `validateOutfitForPublish()` reusable trong service layer.
+- **MODULE 4 — Media/R2**: Đã có `uploadMediaAsset()` trong `media.service.ts` — upload R2 + ghi media_assets + update product.mockupImageUrl / outfit.coverImageUrl. Hai route mới (`/mockup`, `/cover`) reuse service này. Generic `/api/manager/media/upload` vẫn giữ nguyên cho flexible upload.
+- **MODULE 5 — Tracking**: Xác nhận end-to-end OK — outfit view: `TrackOutfitView` → `POST /api/tracking/outfit-view` → `recordOutfitView()`; click: `/go/[outfitCode]/[productId]` → `resolveClickRedirect()` → redirect 302 → `after()` → `checkAntiSpam()` → `recordClick()`. Không cần sửa gì.
+
+### Existing behavior preserved
+
+- ✅ `GET /api/manager/products` — behavior cũ (keyword/urlSuffix/status filter, scope) giữ nguyên; chỉ thêm params mới
+- ✅ `GET/PATCH /api/manager/products/[id]` — DNA và status update không thay đổi; chỉ thêm mockupImageUrl + rawJson
+- ✅ `GET/PATCH /api/manager/outfits/[id]` — publish/hide via PATCH vẫn hoạt động; route mới /publish và /hide là convenience wrappers
+- ✅ `src/server/sync/sync-products.service.ts` — cron sync giữ nguyên, manual sync route là route riêng dùng lại building blocks
+- ✅ `src/server/media/media.service.ts` — không thay đổi
+- ✅ `src/server/tracking/click-tracking.service.ts`, `view-tracking.service.ts` — không thay đổi
+- ✅ Prisma schema — không thay đổi
+- ✅ Constants — không thay đổi
+- ✅ Public routes — không thay đổi
+
+### Tests/checks run
+
+- `npm run lint` — 0 errors, 7 warnings (pre-existing từ test files) ✅
+- `npm run build` — 34 routes compiled, TypeScript 0 errors ✅
+
+### Risks / Notes
+
+- `POST /api/manager/products/sync` không có lock check (khác với cron sync). Manager có thể trigger nhiều sync song song cho cùng urlSuffix+groupId. Chấp nhận được cho MVP vì là thao tác thủ công.
+- `validateOutfitForPublish` có 2 DB queries (findUnique + findMany cho products). Chấp nhận được cho MVP.
+- `PATCH /api/manager/products/[id]` với mockupImageUrl chỉ update field trong DB, không upload file. Upload file dùng `/mockup` route riêng.
+- Manual sync không có rate limiting. Nếu cần, thêm sau.
+
+---
+
 ## 2026-07-03 — UI-5.1 — Screenshot Review & Polish Pass (Outfits Manager)
 
 ### Files changed

@@ -4,7 +4,6 @@ import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { getProductDisplayImage } from '@/lib/utils';
 
 // Serializable subset of ProductDetail — excludes Date fields (not needed by the form)
@@ -26,6 +25,30 @@ interface ProductEditFormProps {
 
 type Saving = 'dna' | 'status' | 'mockup' | null;
 type Msg = { type: 'success' | 'error'; text: string } | null;
+
+function Panel({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm">
+      <p className="mb-4 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">{title}</p>
+      {children}
+    </div>
+  );
+}
+
+function InlineMsg({ msg }: { msg: Msg }) {
+  if (!msg) return null;
+  return (
+    <div
+      className={`rounded-xl px-4 py-2.5 text-sm font-medium ${
+        msg.type === 'success'
+          ? 'bg-emerald-50 text-emerald-700'
+          : 'bg-red-50 text-red-700'
+      }`}
+    >
+      {msg.text}
+    </div>
+  );
+}
 
 export default function ProductEditForm({
   product,
@@ -115,7 +138,7 @@ export default function ProductEditForm({
         const data = (await res.json()) as { error?: string };
         showMsg('error', data.error ?? 'Upload failed.');
       } else {
-        showMsg('success', 'Mockup uploaded successfully.');
+        showMsg('success', 'Mockup uploaded.');
         router.refresh();
       }
     } catch {
@@ -130,108 +153,95 @@ export default function ProductEditForm({
   const hasMockup = !!product.mockupImageUrl;
 
   return (
-    <div className="flex flex-col gap-6">
-      {msg && (
-        <div
-          className={`rounded-lg px-4 py-2.5 text-sm ${
-            msg.type === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'
-          }`}
-        >
-          {msg.text}
-        </div>
-      )}
+    <div className="flex flex-col gap-5">
+      <InlineMsg msg={msg} />
 
-      {/* Image section */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Product Image</CardTitle>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-4">
-          <div className="flex flex-wrap items-start gap-4">
-            <div className="flex flex-col items-start gap-1">
-              <span className="text-xs text-muted-foreground">
-                Display {hasMockup ? '(mockup)' : '(source)'}
-              </span>
-              {/* external URL from API/R2 — next/image requires domain config */}
+      {/* ── Image ── */}
+      <Panel title="Product Image">
+        <div className="flex flex-wrap items-start gap-5">
+          <div className="flex flex-col gap-1.5">
+            <p className="text-[11px] text-slate-400">
+              {hasMockup ? 'Display (mockup)' : 'Display (source)'}
+            </p>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={displayImage}
+              alt={product.name}
+              className="h-40 w-40 rounded-xl border border-slate-100 object-cover"
+            />
+          </div>
+          {hasMockup && (
+            <div className="flex flex-col gap-1.5">
+              <p className="text-[11px] text-slate-400">Source (original)</p>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={displayImage}
-                alt={product.name}
-                className="h-40 w-40 rounded-lg border object-cover"
+                src={product.imageUrl}
+                alt="original"
+                className="h-24 w-24 rounded-xl border border-slate-100 object-cover opacity-50"
               />
-            </div>
-            {hasMockup && (
-              <div className="flex flex-col items-start gap-1">
-                <span className="text-xs text-muted-foreground">Source (original)</span>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={product.imageUrl}
-                  alt="original"
-                  className="h-20 w-20 rounded-lg border object-cover opacity-60"
-                />
-              </div>
-            )}
-          </div>
-
-          {canUploadMockup && (
-            <div className="flex items-center gap-3">
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/jpeg,image/png,image/webp"
-                className="hidden"
-                onChange={handleMockupChange}
-                disabled={isBusy}
-              />
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={isBusy}
-                onClick={() => fileInputRef.current?.click()}
-              >
-                {saving === 'mockup' ? 'Uploading…' : hasMockup ? 'Replace Mockup' : 'Upload Mockup'}
-              </Button>
-              {hasMockup && (
-                <span className="text-xs text-muted-foreground">Uploading will replace the current mockup.</span>
-              )}
             </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
 
-      {/* DNA section — show if user can edit OR DNA already exists (read display) */}
-      {(canUpdateDna || product.productDna) && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Product DNA</CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-3">
-            <Textarea
-              value={dna}
-              onChange={(e) => setDna(e.target.value)}
-              placeholder="Mô tả sản phẩm dùng cho workflow AI fashion affiliate…"
-              rows={6}
-              disabled={!canUpdateDna || isBusy}
+        {canUploadMockup && (
+          <div className="mt-4 flex items-center gap-3">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              className="hidden"
+              onChange={handleMockupChange}
+              disabled={isBusy}
             />
-            {canUpdateDna && (
-              <div className="flex justify-end">
-                <Button size="sm" disabled={isBusy} onClick={saveDna}>
-                  {saving === 'dna' ? 'Saving…' : 'Save DNA'}
-                </Button>
-              </div>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={isBusy}
+              onClick={() => fileInputRef.current?.click()}
+              className="rounded-xl border-slate-200 text-slate-700 hover:border-slate-950 hover:text-slate-950"
+            >
+              {saving === 'mockup' ? 'Uploading…' : hasMockup ? 'Replace Mockup' : 'Upload Mockup'}
+            </Button>
+            {hasMockup && (
+              <span className="text-[11px] text-slate-400">
+                Will replace the current mockup.
+              </span>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        )}
+      </Panel>
+
+      {/* ── Product DNA ── */}
+      {(canUpdateDna || product.productDna) && (
+        <Panel title="Product DNA">
+          <Textarea
+            value={dna}
+            onChange={(e) => setDna(e.target.value)}
+            placeholder="Product description for AI fashion affiliate workflow…"
+            rows={7}
+            disabled={!canUpdateDna || isBusy}
+            className="rounded-xl border-slate-200 text-sm text-slate-700 placeholder:text-slate-300 focus-visible:ring-slate-950"
+          />
+          {canUpdateDna && (
+            <div className="mt-3 flex justify-end">
+              <Button
+                size="sm"
+                disabled={isBusy}
+                onClick={saveDna}
+                className="rounded-xl bg-slate-950 text-white hover:bg-slate-800"
+              >
+                {saving === 'dna' ? 'Saving…' : 'Save DNA'}
+              </Button>
+            </div>
+          )}
+        </Panel>
       )}
 
-      {/* Status section */}
+      {/* ── Status ── */}
       {canUpdate && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Status</CardTitle>
-          </CardHeader>
-          <CardContent className="flex items-center gap-6">
-            <div className="flex gap-4">
+        <Panel title="Status">
+          <div className="flex items-center gap-6">
+            <div className="flex gap-5">
               {(['active', 'inactive'] as const).map((s) => (
                 <label key={s} className="flex cursor-pointer items-center gap-2 text-sm">
                   <input
@@ -241,17 +251,22 @@ export default function ProductEditForm({
                     checked={status === s}
                     onChange={() => setStatus(s)}
                     disabled={isBusy}
-                    className="h-4 w-4 accent-primary"
+                    className="h-4 w-4 accent-slate-950"
                   />
-                  <span className="capitalize">{s}</span>
+                  <span className="capitalize text-slate-700">{s}</span>
                 </label>
               ))}
             </div>
-            <Button size="sm" disabled={isBusy} onClick={saveStatus}>
+            <Button
+              size="sm"
+              disabled={isBusy}
+              onClick={saveStatus}
+              className="rounded-xl bg-slate-950 text-white hover:bg-slate-800"
+            >
               {saving === 'status' ? 'Saving…' : 'Save Status'}
             </Button>
-          </CardContent>
-        </Card>
+          </div>
+        </Panel>
       )}
     </div>
   );

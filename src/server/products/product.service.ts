@@ -69,6 +69,7 @@ export async function getProductById(
 
 export type UpdateProductInput = {
   productDna?: string | null;
+  mockupImageUrl?: string | null;
   status?: 'active' | 'inactive';
 };
 
@@ -85,6 +86,9 @@ export async function updateProductFields(
   if (Object.prototype.hasOwnProperty.call(input, 'productDna')) {
     data.productDna = input.productDna ?? null;
   }
+  if (Object.prototype.hasOwnProperty.call(input, 'mockupImageUrl')) {
+    data.mockupImageUrl = input.mockupImageUrl ?? null;
+  }
   if (input.status !== undefined) {
     data.status = input.status;
   }
@@ -99,7 +103,10 @@ export async function updateProductFields(
 export interface ListProductsParams {
   keyword?: string;
   urlSuffix?: string;
+  externalGroupId?: string;
   status?: ProductStatus;
+  hasMockup?: boolean;
+  hasProductDna?: boolean;
   page: number;
   limit: number;
 }
@@ -137,9 +144,14 @@ export async function listProducts(
   if (scope === 'assigned') where.assignedTo = userId;
   if (params.status) where.status = params.status;
   if (params.urlSuffix) where.urlSuffix = params.urlSuffix;
+  if (params.externalGroupId) where.externalGroupId = params.externalGroupId;
   if (params.keyword) {
     where.name = { contains: params.keyword, mode: 'insensitive' };
   }
+  if (params.hasMockup === true) where.mockupImageUrl = { not: null };
+  if (params.hasMockup === false) where.mockupImageUrl = null;
+  if (params.hasProductDna === true) where.productDna = { not: null };
+  if (params.hasProductDna === false) where.productDna = null;
 
   const [rows, total] = await Promise.all([
     prisma.product.findMany({
@@ -177,6 +189,14 @@ export async function listProducts(
     page: params.page,
     limit: params.limit,
   };
+}
+
+export async function getProductRawJson(id: string): Promise<unknown | null> {
+  const product = await prisma.product.findUnique({
+    where: { id, deletedAt: null },
+    select: { rawJson: true },
+  });
+  return product?.rawJson ?? null;
 }
 
 export async function getDistinctUrlSuffixes(): Promise<string[]> {

@@ -96,7 +96,8 @@ export default async function OutfitDetailPage({ params }: Props) {
         dangerouslySetInnerHTML={{ __html: safeJsonLd(breadcrumbJsonLd) }}
       />
 
-      <main className="mx-auto w-full max-w-5xl px-4 py-10 sm:px-6">
+      <main className="mx-auto w-full max-w-5xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
+        {/* Hero — cover + info */}
         <OutfitHero
           name={outfit.name}
           outfitCode={outfit.outfitCode}
@@ -106,19 +107,27 @@ export default async function OutfitDetailPage({ params }: Props) {
           outfitType={outfit.outfitType}
         />
 
-        {/* Products */}
+        {/* ── Products section ── */}
         {outfit.products.length > 0 ? (
-          <section aria-labelledby="products-heading" className="mt-16 border-t border-slate-100 pt-12">
-            <div className="mb-8 flex items-baseline justify-between">
-              <h2
-                id="products-heading"
-                className="text-xl font-semibold tracking-tight text-slate-950"
-              >
-                Items in this outfit
-              </h2>
-              <span className="text-sm text-slate-400">{outfit.products.length} items</span>
+          <section aria-labelledby="products-heading" className="mt-20">
+            {/* Section header */}
+            <div className="mb-8 flex items-center gap-4">
+              <div className="h-px flex-1 bg-slate-100" />
+              <div className="flex items-center gap-3">
+                <h2
+                  id="products-heading"
+                  className="text-xs font-bold uppercase tracking-[0.22em] text-slate-400"
+                >
+                  Items in this outfit
+                </h2>
+                <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-500">
+                  {outfit.products.length}
+                </span>
+              </div>
+              <div className="h-px flex-1 bg-slate-100" />
             </div>
-            <div className="grid grid-cols-2 gap-x-3 gap-y-6 sm:grid-cols-3 sm:gap-x-4 md:grid-cols-4">
+
+            <div className="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 sm:gap-x-5 md:grid-cols-4 lg:gap-x-6">
               {outfit.products.map((product) => (
                 <ProductClickCard
                   key={product.id}
@@ -131,11 +140,22 @@ export default async function OutfitDetailPage({ params }: Props) {
             </div>
           </section>
         ) : (
-          <p className="mt-16 border-t border-slate-100 pt-12 text-sm text-slate-400">
-            No items in this outfit yet.
-          </p>
+          <div className="mt-16 flex flex-col items-center py-12 text-center">
+            <p className="text-sm text-slate-400">No items in this outfit yet.</p>
+          </div>
         )}
 
+        {/* ── How to style block (uses description if present) ── */}
+        {outfit.description && outfit.products.length > 0 && (
+          <section className="mt-16 rounded-2xl border border-slate-100 bg-slate-50/70 px-8 py-10 text-center">
+            <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.25em] text-slate-300">
+              How to style
+            </p>
+            <p className="text-sm leading-relaxed text-slate-500">{outfit.description}</p>
+          </section>
+        )}
+
+        {/* ── Related outfits ── */}
         <RelatedOutfits outfits={relatedOutfits} />
 
         <SeoContentBlock

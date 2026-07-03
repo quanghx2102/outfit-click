@@ -15,9 +15,9 @@ export default function LogoutButton() {
   return (
     <button
       onClick={handleLogout}
-      className="mt-2 w-full rounded-md px-3 py-1.5 text-left text-xs text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+      className="w-full rounded-lg px-3 py-1.5 text-left text-[12px] font-medium text-slate-400 transition-colors hover:bg-slate-50 hover:text-slate-700"
     >
-      Đăng xuất
+      Sign out
     </button>
   );
 }

@@ -28,7 +28,7 @@ export default async function ManagerOutfitNewPage() {
       <div>
         <Link
           href={MANAGER_ROUTES.OUTFITS}
-          className="mb-3 inline-flex text-sm text-slate-500 transition-colors hover:text-slate-900"
+          className="mb-3 inline-flex text-[12px] font-medium text-slate-400 transition-colors hover:text-slate-900"
         >
           ← Back to Outfits
         </Link>

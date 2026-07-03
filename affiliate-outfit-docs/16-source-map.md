@@ -44,13 +44,18 @@ Bản đồ source code để AI/dev biết file/folder nào phục vụ chức 
 | `/api/auth/logout` | `src/app/api/auth/logout/route.ts` | POST | Logout — clear session cookie |
 | `/api/auth/me` | `src/app/api/auth/me/route.ts` | GET | Lấy thông tin user hiện tại |
 | `/api/cron/sync-products` | `src/app/api/cron/sync-products/route.ts` | GET | Cron sync products từ API |
-| `/api/manager/products` | `src/app/api/manager/products/route.ts` | GET | Danh sách products — auth + scope check + filter/pagination |
-| `/api/manager/products/[id]` | `src/app/api/manager/products/[id]/route.ts` | GET, PATCH | Lấy / cập nhật product (DNA, status) — auth + scope + per-field permission check |
+| `/api/manager/products` | `src/app/api/manager/products/route.ts` | GET | Danh sách products — auth + scope check + filter/pagination (thêm groupId, hasMockup, hasProductDna) |
+| `/api/manager/products/sync` | `src/app/api/manager/products/sync/route.ts` | POST | Manual sync từ Manager — nhận urlSuffix+groupId, gọi API, upsert, ghi sync_log; permission: sync.run |
+| `/api/manager/products/[id]` | `src/app/api/manager/products/[id]/route.ts` | GET, PATCH | Lấy (?rawJson=1 → raw API JSON) / cập nhật product (DNA, mockupImageUrl, status) — auth + scope + per-field permission |
+| `/api/manager/products/[id]/mockup` | `src/app/api/manager/products/[id]/mockup/route.ts` | POST | Upload mockup image → R2 → update product.mockupImageUrl + ghi media_asset; permission: media.upload + products.upload_mockup |
 | `/api/manager/outfits` | `src/app/api/manager/outfits/route.ts` | GET, POST | Danh sách outfits (GET); Tạo outfit mới (POST, multipart) — auth + permission + R2 upload |
 | `/api/manager/outfits/[id]` | `src/app/api/manager/outfits/[id]/route.ts` | GET, PATCH | Lấy / cập nhật outfit — auth + scope + per-status permission check |
+| `/api/manager/outfits/[id]/publish` | `src/app/api/manager/outfits/[id]/publish/route.ts` | POST | Publish outfit — validate (name/cover/products/link) → status=active + publishedAt; permission: outfits.publish |
+| `/api/manager/outfits/[id]/hide` | `src/app/api/manager/outfits/[id]/hide/route.ts` | POST | Hide outfit — status=hidden; permission: outfits.hide |
+| `/api/manager/outfits/[id]/cover` | `src/app/api/manager/outfits/[id]/cover/route.ts` | POST | Upload cover image → R2 → update outfit.coverImageUrl + ghi media_asset; permission: media.upload + outfits.update |
 | `/api/manager/outfits/[id]/products` | `src/app/api/manager/outfits/[id]/products/route.ts` | GET, POST | GET: list products in outfit (ordered created_at ASC); GET?picker=1: search active products for picker; POST: add product — auth + outfits.add_product |
 | `/api/manager/outfits/[id]/products/[productId]` | `src/app/api/manager/outfits/[id]/products/[productId]/route.ts` | DELETE | Remove product from outfit — auth + outfits.remove_product |
-| `/api/manager/media/upload` | `src/app/api/manager/media/upload/route.ts` | POST | Upload mockup/cover — auth + permission check + call media.service |
+| `/api/manager/media/upload` | `src/app/api/manager/media/upload/route.ts` | POST | Upload mockup/cover (generic) — auth + permission check + call media.service |
 | `/api/tracking/outfit-view` | `src/app/api/tracking/outfit-view/route.ts` | POST | Ghi outfit view log — validate input, manager preview skip, set tracking cookies, hash IP, ghi `outfit_view_logs` |
 | `/go/[outfitCode]/[productId]` | `src/app/go/[outfitCode]/[productId]/route.ts` | GET | Validate outfit+product → pick h5Link\|\|affiliateUrl → set tracking cookies → `after()` ghi `click_logs` → redirect 302 |
 
@@ -96,8 +101,8 @@ Bản đồ source code để AI/dev biết file/folder nào phục vụ chức 
 | `src/server/auth/auth.service.ts` | TASK 3.1 | ✅ done | `loginUser`, `getUserById`, `SafeUser` type — không expose passwordHash |
 | `src/server/products/product.mapper.ts` | TASK 4.3 | ✅ done | `mapApiItemToProductUpsertData()` — map MyCollection API item → `ProductUpsertData` cho Prisma upsert |
 | `src/server/products/product.repository.ts` | TASK 4.3 | ✅ done | `upsertProductFromSource()` — upsert theo unique (urlSuffix, externalLinkId), preserve mockupImageUrl/productDna |
-| `src/server/products/product.service.ts` | TASK 6.1–6.2 | ✅ done | `listProducts()`, `getDistinctUrlSuffixes()`, `getProductById()`, `updateProductFields()`, `listProductsForPicker()` — filter/scope/pagination/edit/picker search |
-| `src/server/outfits/outfit.service.ts` | TASK 7.2–7.4, 8.1–8.2, 10.2, 10.4 | ✅ done | `listOutfits()`, `getDistinctStyles()`, `getDistinctOutfitTypes()`; `createOutfit()`, `getOutfitById()`, `updateOutfitFields()`; `getOutfitProducts()`, `addProductToOutfit()`, `removeProductFromOutfit()`; `listPublicOutfits()`; `getPublicOutfitDetail()`; `getActiveOutfitsForSitemap()`; `getRelatedOutfits()` — CRUD + scope + outfit_products + public listing + public detail + sitemap + related outfits |
+| `src/server/products/product.service.ts` | TASK 6.1–6.2, BACKEND-MVP | ✅ done | `listProducts()` (+ groupId/hasMockup/hasProductDna filter), `getDistinctUrlSuffixes()`, `getProductById()`, `updateProductFields()` (+ mockupImageUrl), `listProductsForPicker()`, `getProductRawJson()` |
+| `src/server/outfits/outfit.service.ts` | TASK 7.2–7.4, 8.1–8.2, 10.2, 10.4, BACKEND-MVP | ✅ done | `listOutfits()`, `getDistinctStyles()`, `getDistinctOutfitTypes()`; `createOutfit()`, `getOutfitById()`, `updateOutfitFields()`; `getOutfitProducts()`, `addProductToOutfit()`, `removeProductFromOutfit()`; `countOutfitProducts()`; `validateOutfitForPublish()` (name/cover/products/link check); `listPublicOutfits()`; `getPublicOutfitDetail()`; `getActiveOutfitsForSitemap()`; `getRelatedOutfits()` |
 | `src/server/sync/mycollection.client.ts` | TASK 4.1 | ✅ done | `fetchStorefrontGroupProductList()` — HTTP client gọi MyCollection GQL API, pagination + timeout + error handling |
 | `src/server/sync/sync-products.service.ts` | TASK 4.4 | ✅ done | `syncProducts()` — full pipeline: lock check, pagination, upsert, mark missing, sync_logs |
 | `src/server/sync/sync-log.service.ts` | TASK 11.3 | ✅ done | `listSyncLogs()` — query sync_logs với filter status/date, pagination; trả `ListSyncLogsResult` |

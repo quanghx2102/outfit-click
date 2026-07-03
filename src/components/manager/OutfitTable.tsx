@@ -24,46 +24,58 @@ interface OutfitTableProps {
 
 export default function OutfitTable({ items }: OutfitTableProps) {
   return (
-    <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+    <div className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm">
       <Table>
         <TableHeader>
-          <TableRow className="bg-slate-50">
-            <TableHead className="w-16">Cover</TableHead>
-            <TableHead>Name</TableHead>
-            <TableHead className="w-28">Code</TableHead>
-            <TableHead className="w-28">Status</TableHead>
-            <TableHead className="w-20 text-center">Products</TableHead>
-            <TableHead className="w-40">Published At</TableHead>
+          <TableRow className="border-slate-100 bg-slate-50/80 hover:bg-slate-50/80">
+            <TableHead className="w-[68px] pl-5 text-[10px] font-bold uppercase tracking-widest text-slate-400">
+              Cover
+            </TableHead>
+            <TableHead className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+              Name
+            </TableHead>
+            <TableHead className="w-28 text-[10px] font-bold uppercase tracking-widest text-slate-400">
+              Code
+            </TableHead>
+            <TableHead className="w-28 text-[10px] font-bold uppercase tracking-widest text-slate-400">
+              Status
+            </TableHead>
+            <TableHead className="w-20 text-center text-[10px] font-bold uppercase tracking-widest text-slate-400">
+              Items
+            </TableHead>
+            <TableHead className="w-40 text-[10px] font-bold uppercase tracking-widest text-slate-400">
+              Published
+            </TableHead>
             <TableHead className="w-12" />
           </TableRow>
         </TableHeader>
         <TableBody>
           {items.map((outfit) => (
-            <TableRow key={outfit.id} className="hover:bg-slate-50">
-              <TableCell>
+            <TableRow key={outfit.id} className="border-slate-100 transition-colors hover:bg-slate-50/60">
+              <TableCell className="pl-5">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={outfit.coverImageUrl}
                   alt={outfit.name}
-                  className="h-12 w-12 rounded-xl object-cover"
+                  className="h-14 w-14 rounded-xl border border-slate-100 object-cover"
                 />
               </TableCell>
               <TableCell className="max-w-xs">
                 <Link
                   href={`/manager/outfits/${outfit.id}`}
-                  className="line-clamp-2 text-sm font-medium text-slate-900 hover:text-slate-600"
+                  className="line-clamp-2 text-[13px] font-medium text-slate-900 transition-colors hover:text-slate-500"
                 >
                   {outfit.name}
                 </Link>
-                {(outfit.style || outfit.outfitType) && (
-                  <div className="mt-1 flex flex-wrap gap-1">
+                {(outfit.style ?? outfit.outfitType) && (
+                  <div className="mt-1.5 flex flex-wrap gap-1">
                     {outfit.style && (
-                      <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-600">
+                      <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-500">
                         {outfit.style.name}
                       </span>
                     )}
                     {outfit.outfitType && (
-                      <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-600">
+                      <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-500">
                         {outfit.outfitType.name}
                       </span>
                     )}
@@ -71,21 +83,23 @@ export default function OutfitTable({ items }: OutfitTableProps) {
                 )}
               </TableCell>
               <TableCell>
-                <span className="font-mono text-xs text-slate-500">{outfit.outfitCode}</span>
+                <span className="font-mono text-[11px] font-semibold text-slate-500">
+                  {outfit.outfitCode}
+                </span>
               </TableCell>
               <TableCell>
                 <StatusBadge status={outfit.status} />
               </TableCell>
-              <TableCell className="text-center text-sm text-slate-600">
+              <TableCell className="text-center text-[13px] font-medium text-slate-600">
                 {outfit.productCount}
               </TableCell>
-              <TableCell className="text-xs text-slate-500">
+              <TableCell className="text-[11px] text-slate-400">
                 {formatDate(outfit.publishedAt)}
               </TableCell>
               <TableCell>
                 <Link
                   href={`/manager/outfits/${outfit.id}`}
-                  className="inline-flex h-8 items-center rounded-lg px-2.5 text-xs font-medium text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900"
+                  className="inline-flex h-7 items-center rounded-lg px-2.5 text-[12px] font-medium text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900"
                 >
                   Edit
                 </Link>

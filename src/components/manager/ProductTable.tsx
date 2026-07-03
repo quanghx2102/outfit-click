@@ -21,13 +21,13 @@ function formatDate(date: Date | null): string {
 
 function DnaIndicator({ has }: { has: boolean }) {
   return has ? (
-    <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-700">
+    <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-emerald-600">
       <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
       DNA
     </span>
   ) : (
-    <span className="inline-flex items-center gap-1 text-xs text-slate-400">
-      <span className="h-1.5 w-1.5 rounded-full bg-slate-300" />
+    <span className="inline-flex items-center gap-1.5 text-[11px] text-slate-300">
+      <span className="h-1.5 w-1.5 rounded-full bg-slate-200" />
       No DNA
     </span>
   );
@@ -35,13 +35,13 @@ function DnaIndicator({ has }: { has: boolean }) {
 
 function MockupIndicator({ has }: { has: boolean }) {
   return has ? (
-    <span className="inline-flex items-center gap-1 text-xs font-medium text-sky-700">
+    <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-sky-600">
       <span className="h-1.5 w-1.5 rounded-full bg-sky-500" />
       Mockup
     </span>
   ) : (
-    <span className="inline-flex items-center gap-1 text-xs text-slate-400">
-      <span className="h-1.5 w-1.5 rounded-full bg-slate-300" />
+    <span className="inline-flex items-center gap-1.5 text-[11px] text-slate-300">
+      <span className="h-1.5 w-1.5 rounded-full bg-slate-200" />
       No Mockup
     </span>
   );
@@ -57,40 +57,54 @@ export default function ProductTable({ items }: ProductTableProps) {
   }
 
   return (
-    <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+    <div className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm">
       <Table>
         <TableHeader>
-          <TableRow className="bg-slate-50 hover:bg-slate-50">
-            <TableHead className="w-16 pl-4">Image</TableHead>
-            <TableHead>Name</TableHead>
-            <TableHead className="w-36">Source</TableHead>
-            <TableHead className="w-28">Status</TableHead>
-            <TableHead className="w-28">DNA</TableHead>
-            <TableHead className="w-28">Mockup</TableHead>
-            <TableHead className="w-40">Last Synced</TableHead>
+          <TableRow className="border-slate-100 bg-slate-50/80 hover:bg-slate-50/80">
+            <TableHead className="w-[68px] pl-5 text-[10px] font-bold uppercase tracking-widest text-slate-400">
+              Image
+            </TableHead>
+            <TableHead className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+              Name
+            </TableHead>
+            <TableHead className="w-32 text-[10px] font-bold uppercase tracking-widest text-slate-400">
+              Source
+            </TableHead>
+            <TableHead className="w-28 text-[10px] font-bold uppercase tracking-widest text-slate-400">
+              Status
+            </TableHead>
+            <TableHead className="w-24 text-[10px] font-bold uppercase tracking-widest text-slate-400">
+              DNA
+            </TableHead>
+            <TableHead className="w-28 text-[10px] font-bold uppercase tracking-widest text-slate-400">
+              Mockup
+            </TableHead>
+            <TableHead className="w-36 text-[10px] font-bold uppercase tracking-widest text-slate-400">
+              Last Synced
+            </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {items.map((product) => (
-            <TableRow key={product.id} className="hover:bg-slate-50">
-              <TableCell className="pl-4">
+            <TableRow key={product.id} className="border-slate-100 transition-colors hover:bg-slate-50/60">
+              <TableCell className="pl-5">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={getProductDisplayImage(product)}
                   alt={product.name}
-                  className="h-12 w-12 rounded-xl object-cover"
+                  className="h-14 w-14 rounded-xl border border-slate-100 object-cover"
                 />
               </TableCell>
               <TableCell className="max-w-xs">
                 <Link
                   href={`/manager/products/${product.id}`}
-                  className="line-clamp-2 text-sm font-medium text-slate-900 hover:underline"
+                  className="line-clamp-2 text-[13px] font-medium text-slate-900 transition-colors hover:text-slate-500"
                 >
                   {product.name}
                 </Link>
               </TableCell>
               <TableCell>
-                <span className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-700">
+                <span className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-0.5 text-[11px] font-semibold text-slate-600">
                   {product.urlSuffix}
                 </span>
               </TableCell>
@@ -103,7 +117,7 @@ export default function ProductTable({ items }: ProductTableProps) {
               <TableCell>
                 <MockupIndicator has={product.hasMockup} />
               </TableCell>
-              <TableCell className="text-xs text-slate-500">
+              <TableCell className="text-[11px] text-slate-400">
                 {formatDate(product.lastSyncedAt)}
               </TableCell>
             </TableRow>

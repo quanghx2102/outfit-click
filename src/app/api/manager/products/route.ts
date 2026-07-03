@@ -5,6 +5,12 @@ import { listProducts } from '@/server/products/product.service';
 import { PRODUCT_STATUS } from '@/constants/status';
 import type { ProductStatus } from '@/constants/status';
 
+function parseBoolParam(value: string | null): boolean | undefined {
+  if (value === 'true') return true;
+  if (value === 'false') return false;
+  return undefined;
+}
+
 const VALID_STATUSES = new Set<string>(Object.values(PRODUCT_STATUS));
 
 export async function GET(request: NextRequest) {
@@ -21,9 +27,12 @@ export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
   const keyword = searchParams.get('keyword') || undefined;
   const urlSuffix = searchParams.get('urlSuffix') || undefined;
+  const externalGroupId = searchParams.get('groupId') || undefined;
   const rawStatus = searchParams.get('status');
   const status =
     rawStatus && VALID_STATUSES.has(rawStatus) ? (rawStatus as ProductStatus) : undefined;
+  const hasMockup = parseBoolParam(searchParams.get('hasMockup'));
+  const hasProductDna = parseBoolParam(searchParams.get('hasProductDna'));
   const page = Math.max(1, parseInt(searchParams.get('page') ?? '1', 10) || 1);
   const limit = Math.min(
     100,
@@ -32,7 +41,7 @@ export async function GET(request: NextRequest) {
 
   try {
     const result = await listProducts(
-      { keyword, urlSuffix, status, page, limit },
+      { keyword, urlSuffix, externalGroupId, status, hasMockup, hasProductDna, page, limit },
       scope,
       session.userId,
     );

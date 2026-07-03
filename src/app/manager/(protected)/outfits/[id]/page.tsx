@@ -25,6 +25,15 @@ function formatDate(date: Date | null): string {
   );
 }
 
+function InfoPanel({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm">
+      <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">{title}</p>
+      {children}
+    </div>
+  );
+}
+
 export default async function ManagerOutfitEditPage({ params }: Props) {
   const [user, { id }] = await Promise.all([requireAuth(), params]);
   const [permissions, styleOptions, outfitTypeOptions] = await Promise.all([
@@ -42,7 +51,7 @@ export default async function ManagerOutfitEditPage({ params }: Props) {
   if (scope === 'none') {
     return (
       <div className="p-6 lg:p-8">
-        <p className="text-sm text-slate-500">You do not have permission to view this outfit.</p>
+        <p className="text-sm text-slate-400">You do not have permission to view this outfit.</p>
       </div>
     );
   }
@@ -65,26 +74,29 @@ export default async function ManagerOutfitEditPage({ params }: Props) {
   }));
 
   return (
-    <div className="flex flex-col gap-6 p-6 lg:p-8">
-      <div>
-        <Link
-          href={MANAGER_ROUTES.OUTFITS}
-          className="mb-3 inline-flex text-sm text-slate-500 transition-colors hover:text-slate-900"
-        >
-          ← Back to Outfits
-        </Link>
-        <PageHeader
-          title={outfit.name}
-          actions={
-            <div className="flex items-center gap-2">
-              <StatusBadge status={outfit.status} />
-              <span className="font-mono text-sm text-slate-500">{outfit.outfitCode}</span>
-            </div>
-          }
-        />
-      </div>
+    <div className="flex flex-col gap-5 p-6 lg:p-8">
+      {/* Back */}
+      <Link
+        href={MANAGER_ROUTES.OUTFITS}
+        className="w-fit text-[12px] font-medium text-slate-400 transition-colors hover:text-slate-900"
+      >
+        ← Back to Outfits
+      </Link>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_280px]">
+      {/* Header */}
+      <PageHeader
+        title={outfit.name}
+        actions={
+          <div className="flex items-center gap-2">
+            <StatusBadge status={outfit.status} />
+            <span className="rounded-full bg-slate-100 px-2.5 py-0.5 font-mono text-[11px] font-semibold text-slate-600">
+              {outfit.outfitCode}
+            </span>
+          </div>
+        }
+      />
+
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-[1fr_260px]">
         {/* Left: editable form */}
         <OutfitForm
           mode="edit"
@@ -109,26 +121,23 @@ export default async function ManagerOutfitEditPage({ params }: Props) {
 
         {/* Right: read-only metadata */}
         <div className="flex flex-col gap-4">
-          <div className="rounded-2xl border border-slate-200 bg-white p-4">
-            <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-400">
-              Outfit Info
-            </p>
-            <dl className="flex flex-col gap-2 text-sm">
+          <InfoPanel title="Outfit Info">
+            <dl className="flex flex-col gap-2.5 text-[13px]">
               <div className="flex justify-between gap-2">
-                <dt className="text-slate-500">Code</dt>
+                <dt className="text-slate-400">Code</dt>
                 <dd>
-                  <span className="font-mono text-slate-900">{outfit.outfitCode}</span>
+                  <span className="font-mono font-semibold text-slate-900">{outfit.outfitCode}</span>
                 </dd>
               </div>
               <div className="flex justify-between gap-2">
-                <dt className="text-slate-500">Slug</dt>
-                <dd className="break-all text-xs text-slate-700">{outfit.slug}</dd>
+                <dt className="text-slate-400">Slug</dt>
+                <dd className="break-all text-[11px] text-slate-600">{outfit.slug}</dd>
               </div>
               {outfit.style && (
                 <div className="flex justify-between gap-2">
-                  <dt className="text-slate-500">Style</dt>
+                  <dt className="text-slate-400">Style</dt>
                   <dd>
-                    <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-700">
+                    <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-[11px] font-semibold text-slate-600">
                       {outfit.style.name}
                     </span>
                   </dd>
@@ -136,38 +145,35 @@ export default async function ManagerOutfitEditPage({ params }: Props) {
               )}
               {outfit.outfitType && (
                 <div className="flex justify-between gap-2">
-                  <dt className="text-slate-500">Type</dt>
+                  <dt className="text-slate-400">Type</dt>
                   <dd>
-                    <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-700">
+                    <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-[11px] font-semibold text-slate-600">
                       {outfit.outfitType.name}
                     </span>
                   </dd>
                 </div>
               )}
             </dl>
-          </div>
+          </InfoPanel>
 
-          <div className="rounded-2xl border border-slate-200 bg-white p-4">
-            <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-400">
-              Timestamps
-            </p>
-            <dl className="flex flex-col gap-2 text-sm">
+          <InfoPanel title="Timestamps">
+            <dl className="flex flex-col gap-2.5 text-[13px]">
               {outfit.publishedAt && (
                 <div className="flex justify-between gap-2">
-                  <dt className="text-slate-500">Published</dt>
-                  <dd className="text-xs text-slate-700">{formatDate(outfit.publishedAt)}</dd>
+                  <dt className="text-slate-400">Published</dt>
+                  <dd className="text-[11px] text-slate-600">{formatDate(outfit.publishedAt)}</dd>
                 </div>
               )}
               <div className="flex justify-between gap-2">
-                <dt className="text-slate-500">Created</dt>
-                <dd className="text-xs text-slate-700">{formatDate(outfit.createdAt)}</dd>
+                <dt className="text-slate-400">Created</dt>
+                <dd className="text-[11px] text-slate-600">{formatDate(outfit.createdAt)}</dd>
               </div>
               <div className="flex justify-between gap-2">
-                <dt className="text-slate-500">Updated</dt>
-                <dd className="text-xs text-slate-700">{formatDate(outfit.updatedAt)}</dd>
+                <dt className="text-slate-400">Updated</dt>
+                <dd className="text-[11px] text-slate-600">{formatDate(outfit.updatedAt)}</dd>
               </div>
             </dl>
-          </div>
+          </InfoPanel>
         </div>
       </div>
 
