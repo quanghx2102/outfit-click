@@ -43,8 +43,8 @@ export default async function ManagerOutfitsPage({
   if (scope === 'none') {
     return (
       <div className="p-6 lg:p-8">
-        <PageHeader title="Outfits" />
-        <p className="text-sm text-slate-500">You do not have permission to view outfits.</p>
+        <PageHeader title="Outfit" />
+        <p className="text-sm text-slate-500">Bạn không có quyền xem outfit.</p>
       </div>
     );
   }
@@ -84,15 +84,15 @@ export default async function ManagerOutfitsPage({
   return (
     <div className="flex flex-col gap-6 p-6 lg:p-8">
       <PageHeader
-        title="Outfits"
-        description={`${result.total} outfit${result.total !== 1 ? 's' : ''} total${scope === 'own' ? ' (created by you)' : ''}`}
+        title="Outfit"
+        description={`${result.total} outfit${scope === 'own' ? ' (do bạn tạo)' : ''}`}
         actions={
           canCreate && (
             <Link
               href={`${MANAGER_ROUTES.OUTFITS}/new`}
               className="inline-flex h-9 shrink-0 items-center rounded-xl bg-slate-950 px-4 text-sm font-medium text-white transition-colors hover:bg-slate-800"
             >
-              + Create Outfit
+              + Tạo Outfit
             </Link>
           )
         }
@@ -105,8 +105,8 @@ export default async function ManagerOutfitsPage({
 
       {result.items.length === 0 ? (
         <EmptyState
-          title="No outfits found"
-          description="Try adjusting the filters or create a new outfit."
+          title="Không tìm thấy outfit nào"
+          description="Thử điều chỉnh bộ lọc hoặc tạo outfit mới."
         />
       ) : (
         <OutfitTable items={result.items} />
@@ -115,7 +115,7 @@ export default async function ManagerOutfitsPage({
       {totalPages > 1 && (
         <div className="flex items-center justify-between text-sm text-slate-600">
           <span>
-            Page {page} of {totalPages}
+            Trang {page} / {totalPages}
           </span>
           <div className="flex gap-2">
             {page > 1 && (
@@ -123,7 +123,7 @@ export default async function ManagerOutfitsPage({
                 href={buildPageUrl(page - 1)}
                 className="inline-flex h-8 items-center rounded-xl border border-slate-200 bg-white px-3 text-sm transition-colors hover:bg-slate-50 hover:text-slate-950"
               >
-                Previous
+                Trước
               </Link>
             )}
             {page < totalPages && (
@@ -131,7 +131,7 @@ export default async function ManagerOutfitsPage({
                 href={buildPageUrl(page + 1)}
                 className="inline-flex h-8 items-center rounded-xl border border-slate-200 bg-white px-3 text-sm transition-colors hover:bg-slate-50 hover:text-slate-950"
               >
-                Next
+                Sau
               </Link>
             )}
           </div>

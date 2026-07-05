@@ -76,6 +76,7 @@ export interface ListOutfitsResult {
 export interface StyleOption {
   id: string;
   name: string;
+  slug: string;
 }
 
 export interface OutfitTypeOption {
@@ -159,7 +160,7 @@ export async function listOutfits(
 export async function getDistinctStyles(): Promise<StyleOption[]> {
   const rows = await prisma.style.findMany({
     where: { status: 'active', deletedAt: null },
-    select: { id: true, name: true },
+    select: { id: true, name: true, slug: true },
     orderBy: { name: 'asc' },
   });
   return rows;
@@ -593,11 +594,14 @@ export interface PublicOutfitListItem {
   slug: string;
   coverImageUrl: string;
   description: string | null;
+  style: { name: string } | null;
 }
 
 export interface ListPublicOutfitsParams {
   page: number;
   limit: number;
+  keyword?: string;
+  styleSlug?: string;
 }
 
 export interface ListPublicOutfitsResult {
@@ -616,6 +620,17 @@ export async function listPublicOutfits(
     deletedAt: null,
   };
 
+  if (params.styleSlug) {
+    where.style = { slug: params.styleSlug };
+  }
+
+  if (params.keyword) {
+    where.OR = [
+      { name: { contains: params.keyword, mode: 'insensitive' } },
+      { outfitCode: { contains: params.keyword, mode: 'insensitive' } },
+    ];
+  }
+
   const [rows, total] = await Promise.all([
     prisma.outfit.findMany({
       where,
@@ -629,6 +644,7 @@ export async function listPublicOutfits(
         slug: true,
         coverImageUrl: true,
         description: true,
+        style: { select: { name: true } },
       },
     }),
     prisma.outfit.count({ where }),
@@ -642,6 +658,7 @@ export async function listPublicOutfits(
       slug: o.slug,
       coverImageUrl: o.coverImageUrl,
       description: o.description,
+      style: o.style,
     })),
     total,
     page: params.page,

@@ -42,9 +42,13 @@ PRODUCT_SYNC_URL_SUFFIXES=outfitsdepoday
 PRODUCT_SYNC_GROUP_IDS=3913274
 MYCOLLECTION_AFFILIATE_ID=17395720129
 MYCOLLECTION_AFFILIATE_USER_ID=80199572
+MYCOLLECTION_UUID=685bb3a5-316f-4455-a8bf-6a8ebfdaa4ae
+MYCOLLECTION_DEVICE_ID=F358CB297F8082F2C3F32272A523AB46
 MYCOLLECTION_CID=vn
 MYCOLLECTION_LANGUAGE=vi
 ```
+
+> **Lưu ý:** `MYCOLLECTION_UUID` và `MYCOLLECTION_DEVICE_ID` là bắt buộc kể từ khi API `mycollection.shop` yêu cầu `uuId`/`deviceId`. Thiếu 2 giá trị này → sync lỗi `uuid is nil`. Lấy từ network tab trình duyệt khi mở `collshp.com/n/{urlSuffix}`.
 
 Nếu nhiều source, nên dùng config file trong code thay vì nhồi quá nhiều ENV.
 

@@ -18,7 +18,7 @@ export default async function ManagerOutfitNewPage() {
   if (!permissions.includes(PERMISSIONS.OUTFITS_CREATE)) {
     return (
       <div className="p-6 lg:p-8">
-        <p className="text-sm text-slate-500">You do not have permission to create outfits.</p>
+        <p className="text-sm text-slate-500">Bạn không có quyền tạo outfit.</p>
       </div>
     );
   }
@@ -30,11 +30,11 @@ export default async function ManagerOutfitNewPage() {
           href={MANAGER_ROUTES.OUTFITS}
           className="mb-3 inline-flex text-[12px] font-medium text-slate-400 transition-colors hover:text-slate-900"
         >
-          ← Back to Outfits
+          ← Quay lại Outfit
         </Link>
         <PageHeader
-          title="Create New Outfit"
-          description="Outfit will be saved as draft. Publish separately after adding products."
+          title="Tạo Outfit mới"
+          description="Outfit sẽ được lưu ở dạng nháp. Đăng riêng sau khi đã thêm sản phẩm."
         />
       </div>
 

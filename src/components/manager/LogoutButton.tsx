@@ -15,9 +15,12 @@ export default function LogoutButton() {
   return (
     <button
       onClick={handleLogout}
-      className="w-full rounded-lg px-3 py-1.5 text-left text-[12px] font-medium text-slate-400 transition-colors hover:bg-slate-50 hover:text-slate-700"
+      className="w-full rounded-lg px-3 py-1.5 text-left text-[12px] font-medium transition-colors"
+      style={{ color: 'rgba(255,255,255,0.4)' }}
+      onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.color = 'rgba(255,255,255,0.7)'; }}
+      onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.color = 'rgba(255,255,255,0.4)'; }}
     >
-      Sign out
+      Đăng xuất
     </button>
   );
 }

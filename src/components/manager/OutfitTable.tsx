@@ -29,22 +29,22 @@ export default function OutfitTable({ items }: OutfitTableProps) {
         <TableHeader>
           <TableRow className="border-slate-100 bg-slate-50/80 hover:bg-slate-50/80">
             <TableHead className="w-[68px] pl-5 text-[10px] font-bold uppercase tracking-widest text-slate-400">
-              Cover
+              Ảnh bìa
             </TableHead>
             <TableHead className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
-              Name
+              Tên
             </TableHead>
             <TableHead className="w-28 text-[10px] font-bold uppercase tracking-widest text-slate-400">
-              Code
+              Mã
             </TableHead>
             <TableHead className="w-28 text-[10px] font-bold uppercase tracking-widest text-slate-400">
-              Status
+              Trạng thái
             </TableHead>
             <TableHead className="w-20 text-center text-[10px] font-bold uppercase tracking-widest text-slate-400">
-              Items
+              Sản phẩm
             </TableHead>
             <TableHead className="w-40 text-[10px] font-bold uppercase tracking-widest text-slate-400">
-              Published
+              Ngày đăng
             </TableHead>
             <TableHead className="w-12" />
           </TableRow>
@@ -101,7 +101,7 @@ export default function OutfitTable({ items }: OutfitTableProps) {
                   href={`/manager/outfits/${outfit.id}`}
                   className="inline-flex h-7 items-center rounded-lg px-2.5 text-[12px] font-medium text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900"
                 >
-                  Edit
+                  Sửa
                 </Link>
               </TableCell>
             </TableRow>

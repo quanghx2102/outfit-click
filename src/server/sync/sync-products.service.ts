@@ -186,6 +186,8 @@ async function fetchPageWithRetry(params: {
         groupId,
         affiliateId: env.sync.affiliateId,
         affiliateUserId: env.sync.affiliateUserId,
+        uuId: env.sync.uuId,
+        deviceId: env.sync.deviceId,
         cid: env.sync.cid,
         language: env.sync.language,
         offset,

@@ -18,35 +18,56 @@ export default function ProductClickCard({
     <article>
       <Link
         href={redirectPath}
-        className="group block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-4 rounded-2xl"
+        className="group block rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-4"
+        style={{ '--tw-ring-color': '#9A7654' } as React.CSSProperties}
       >
         {/* Image */}
-        <div className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-slate-100 transition-all duration-500 group-hover:-translate-y-1 group-hover:shadow-lg">
+        <div
+          className="relative aspect-[9/16] overflow-hidden rounded-2xl transition-all duration-500 group-hover:-translate-y-1 group-hover:shadow-xl"
+          style={{ background: '#F3EEE7' }}
+        >
           {displayImageUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={displayImageUrl}
-              alt={`${name} trong outfit ${outfitCode}`}
+              alt={`${name} — outfit ${outfitCode}`}
               loading="lazy"
-              className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.05]"
+              className="absolute inset-0 h-full w-full object-contain transition-transform duration-700 ease-out group-hover:scale-[1.03]"
             />
           ) : (
-            <div className="flex h-full items-center justify-center">
-              <span className="text-xs text-slate-300">No image</span>
+            <div
+              className="flex h-full items-center justify-center"
+              style={{ background: 'linear-gradient(135deg, #F3EEE7 0%, #E8DED2 100%)' }}
+            >
+              <span className="text-xs" style={{ color: '#9A9289' }}>Chưa có ảnh</span>
             </div>
           )}
 
-          {/* Hover cue — appears on hover */}
-          <div className="absolute inset-0 flex items-end justify-end p-2.5 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
-            <span className="rounded-full bg-white/92 px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.2em] text-slate-700 shadow-sm backdrop-blur-sm">
-              View
+          {/* "Tap to view" overlay on hover */}
+          <div
+            className="absolute inset-0 flex items-end justify-center pb-3 opacity-0 transition-opacity duration-200 group-hover:opacity-100"
+            style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.28) 0%, transparent 50%)' }}
+          >
+            <span
+              className="rounded-full px-3 py-1 text-[10px] font-bold uppercase"
+              style={{
+                background: 'rgba(255,255,255,0.92)',
+                color: '#5C4432',
+                letterSpacing: '0.16em',
+                backdropFilter: 'blur(6px)',
+              }}
+            >
+              Xem trên Shopee
             </span>
           </div>
         </div>
 
         {/* Name */}
         <div className="mt-3 px-0.5">
-          <p className="line-clamp-2 text-[13px] font-medium leading-snug text-slate-900 transition-colors group-hover:text-slate-500">
+          <p
+            className="line-clamp-2 text-[13px] font-medium leading-snug transition-opacity group-hover:opacity-60"
+            style={{ color: '#111111' }}
+          >
             {name}
           </p>
         </div>

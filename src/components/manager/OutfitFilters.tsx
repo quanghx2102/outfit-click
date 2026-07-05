@@ -10,8 +10,15 @@ import type { StyleOption, OutfitTypeOption } from '@/server/outfits/outfit.serv
 const selectClass =
   'h-8 rounded-xl border border-slate-200 bg-white px-2.5 text-sm text-slate-700 outline-none transition-colors focus-visible:ring-2 focus-visible:ring-slate-950/20 disabled:opacity-50';
 
+const STATUS_LABELS: Record<string, string> = {
+  draft: 'Nháp',
+  active: 'Đang hiển thị',
+  hidden: 'Đã ẩn',
+  deleted: 'Đã xoá',
+};
+
 function statusLabel(s: string): string {
-  return s.charAt(0).toUpperCase() + s.slice(1);
+  return STATUS_LABELS[s] ?? s.charAt(0).toUpperCase() + s.slice(1);
 }
 
 interface OutfitFiltersProps {
@@ -59,11 +66,11 @@ export default function OutfitFilters({ styleOptions, outfitTypeOptions }: Outfi
           name="keyword"
           key={keyword}
           defaultValue={keyword}
-          placeholder="Search name or code..."
+          placeholder="Tìm theo tên hoặc mã..."
           className="w-64"
         />
         <Button type="submit" variant="outline" size="sm" disabled={isPending}>
-          Search
+          Tìm kiếm
         </Button>
       </form>
 
@@ -73,7 +80,7 @@ export default function OutfitFilters({ styleOptions, outfitTypeOptions }: Outfi
         className={selectClass}
         disabled={isPending}
       >
-        <option value="">All statuses</option>
+        <option value="">Tất cả trạng thái</option>
         {(Object.values(OUTFIT_STATUS) as string[])
           .filter((s) => s !== 'deleted')
           .map((s) => (
@@ -89,7 +96,7 @@ export default function OutfitFilters({ styleOptions, outfitTypeOptions }: Outfi
         className={selectClass}
         disabled={isPending}
       >
-        <option value="">All styles</option>
+        <option value="">Tất cả phong cách</option>
         {styleOptions.map((s) => (
           <option key={s.id} value={s.id}>
             {s.name}
@@ -103,7 +110,7 @@ export default function OutfitFilters({ styleOptions, outfitTypeOptions }: Outfi
         className={selectClass}
         disabled={isPending}
       >
-        <option value="">All types</option>
+        <option value="">Tất cả loại outfit</option>
         {outfitTypeOptions.map((t) => (
           <option key={t.id} value={t.id}>
             {t.name}
@@ -111,7 +118,7 @@ export default function OutfitFilters({ styleOptions, outfitTypeOptions }: Outfi
         ))}
       </select>
 
-      {isPending && <span className="text-xs text-slate-500">Loading…</span>}
+      {isPending && <span className="text-xs text-slate-500">Đang tải…</span>}
     </div>
   );
 }

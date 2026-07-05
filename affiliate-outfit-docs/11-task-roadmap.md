@@ -139,33 +139,49 @@ Tài liệu này chia task theo thứ tự nên build để giảm rủi ro.
 
 ## 6.1. Outfit list
 
-- [ ] Outfit list page.
-- [ ] Filter by status/style/type.
-- [ ] Search by name/code.
+- [x] Outfit list page.
+- [x] Filter by status/style/type.
+- [x] Search by name/code.
 - [ ] Show views/clicks/CTR basics.
 
 ## 6.2. Outfit create/edit
 
-- [ ] Create outfit draft.
-- [ ] Generate outfit_code.
-- [ ] Generate slug.
-- [ ] Upload cover.
-- [ ] Edit description/style/type.
+- [x] Create outfit draft.
+- [x] Generate outfit_code.
+- [x] Generate slug.
+- [x] Upload cover.
+- [x] Edit description/style/type.
 
 ## 6.3. Outfit products
 
-- [ ] Product picker.
-- [ ] Add product to outfit.
-- [ ] Remove product from outfit.
-- [ ] Prevent duplicates.
-- [ ] Display mockup fallback image.
+- [x] Product picker.
+- [x] Add product to outfit.
+- [x] Remove product from outfit.
+- [x] Prevent duplicates.
+- [x] Display mockup fallback image.
 
 ## 6.4. Publish/hide/delete
 
-- [ ] Validate before publish.
-- [ ] Publish outfit.
-- [ ] Hide outfit.
-- [ ] Soft delete outfit.
+- [x] Validate before publish.
+- [x] Publish outfit.
+- [x] Hide outfit.
+- [ ] Soft delete outfit. *(chưa có UI/API xoá mềm outfit — chỉ có publish/hide)*
+
+## 6.5. Taxonomy management (Style / Outfit Type)
+
+- [x] CRUD Style qua `/manager/taxonomy` (tạo/sửa/vô hiệu hoá/xoá mềm).
+- [x] CRUD Outfit Type qua `/manager/taxonomy`.
+- [x] Permission `taxonomy.view` / `taxonomy.manage` riêng, cấu hình được qua `/manager/roles`.
+- [x] Chặn xoá style/type đang được outfit tham chiếu.
+- [ ] CRUD Product Category (model đã có sẵn trong schema, chưa có UI/API — follow-up nếu cần).
+
+## 6.6. i18n Manager UI (tiếng Việt)
+
+- [x] Việt hoá `/manager/outfits` (list) + sub-components (`OutfitFilters`, `OutfitTable`).
+- [x] Việt hoá `/manager/outfits/new` + `OutfitForm`.
+- [ ] Việt hoá `/manager/outfits/[id]` (trang edit) — còn tiếng Anh, cần task riêng.
+- [ ] Việt hoá `/manager/products`, `/manager/analytics`, `/manager/sync-logs` nếu cần đồng bộ toàn hệ thống (Roles/Users hiện đã tiếng Việt).
+- [ ] Cân nhắc dựng i18n framework (`next-intl`) nếu số lượng string tăng nhiều — hiện tại toàn bộ text đang hardcode trực tiếp trong JSX, không có dictionary chung.
 
 ---
 
@@ -173,10 +189,12 @@ Tài liệu này chia task theo thứ tự nên build để giảm rủi ro.
 
 ## 7.1. Outfit list public
 
-- [ ] Home/outfit feed.
-- [ ] Outfit card with cover/name.
-- [ ] Click outfit image → outfit detail.
-- [ ] Pagination/infinite load optional.
+- [x] Home/outfit feed.
+- [x] Outfit card with cover/name.
+- [x] Click outfit image → outfit detail.
+- [x] Pagination/infinite load optional. *(pagination trang, giữ filter qua query string)*
+- [x] Search outfit theo tên/mã code (`/outfits?q=`).
+- [x] Filter outfit theo Style (`/outfits?style=slug`, data thật từ bảng `styles`).
 
 ## 7.2. Outfit detail public
 

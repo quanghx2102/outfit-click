@@ -11,6 +11,8 @@ const GQL_QUERY = `
     $groupId: Long
     $page: LinktreelandingpagePaginationInput
     $affiliateMeta: AffiliateMetaInput
+    $uuId: String
+    $deviceId: String
     $cid: String
     $language: String
   ) {
@@ -19,6 +21,8 @@ const GQL_QUERY = `
       groupId: $groupId
       page: $page
       affiliateMeta: $affiliateMeta
+      uuId: $uuId
+      deviceId: $deviceId
       cid: $cid
       language: $language
     ) {
@@ -68,6 +72,8 @@ export interface FetchStorefrontGroupProductListInput {
   groupId: string;
   affiliateId: string;
   affiliateUserId: string;
+  uuId?: string;
+  deviceId?: string;
   cid: string;
   language: string;
   offset: number;
@@ -118,7 +124,7 @@ export interface StorefrontGroupProductListResult {
 export async function fetchStorefrontGroupProductList(
   input: FetchStorefrontGroupProductListInput,
 ): Promise<StorefrontGroupProductListResult> {
-  const { urlSuffix, groupId, affiliateId, affiliateUserId, cid, language, offset, limit } =
+  const { urlSuffix, groupId, affiliateId, affiliateUserId, uuId, deviceId, cid, language, offset, limit } =
     input;
 
   // page.offset and page.limit must be strings per API contract (observed from api-get-data.md).
@@ -129,6 +135,8 @@ export async function fetchStorefrontGroupProductList(
       urlSuffix,
       groupId,
       affiliateMeta: { affiliateId, userId: affiliateUserId },
+      ...(uuId ? { uuId } : {}),
+      ...(deviceId ? { deviceId } : {}),
       cid,
       language,
       page: { offset: String(offset), limit: String(limit), hasMore: true },

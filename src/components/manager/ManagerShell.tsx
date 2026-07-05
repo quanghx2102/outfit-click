@@ -8,11 +8,11 @@ interface ManagerShellProps {
 
 export default function ManagerShell({ user, children }: ManagerShellProps) {
   return (
-    <div className="flex min-h-screen bg-slate-50">
+    <div className="flex min-h-screen" style={{ background: '#F6F7F9' }}>
       <ManagerSidebar user={user} />
       <div className="flex min-w-0 flex-1 flex-col">
         <ManagerTopbar user={user} />
-        <div className="flex-1 overflow-auto p-6">
+        <div className="flex-1 overflow-auto p-8">
           {children}
         </div>
       </div>

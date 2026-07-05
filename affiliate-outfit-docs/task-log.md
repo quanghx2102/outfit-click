@@ -36,6 +36,341 @@
 
 ---
 
+## 2026-07-04 — PUBLIC-OUTFITS-SEARCH-FULLWIDTH-ROBOTO — Search box full-width + đổi font hệ thống sang Roboto
+
+### Files changed
+- `src/app/(public)/outfits/page.tsx`: search form đổi `max-w-md` → `w-full` để input tìm kiếm kéo dài hết chiều ngang container thay vì bị giới hạn
+- `src/app/layout.tsx`: thay `Geist`/`Geist_Mono` (`next/font/google`) bằng `Roboto` (weight 100/300/400/500/700/900, subset `latin` + `vietnamese`), export biến CSS `--font-roboto`; bỏ biến `--font-geist-mono` không còn dùng
+- `src/app/globals.css`: `@theme inline` — `--font-sans`, `--font-mono`, `--font-heading` đổi từ Geist sang `var(--font-roboto)`; thêm `--font-serif: var(--font-roboto)` (trước đó Tailwind fallback về serif hệ thống cho các heading dùng class `font-serif`, ví dụ `OutfitHero.tsx`)
+
+### Summary
+- Toàn bộ hệ thống (public + manager) giờ dùng font Roboto thay vì Geist, bao gồm cả những chỗ trước dùng `font-serif`/`font-mono` (không có font khác nào được định nghĩa riêng nên áp dụng đồng bộ 1 font theo đúng yêu cầu "đổi tất cả font chữ hệ thống").
+- Phát hiện bug có sẵn: `--font-sans: var(--font-sans)` (globals.css) là self-reference, nên trước đây `html { @apply font-sans }` không thực sự áp dụng Geist mà rơi về font mặc định trình duyệt — đã sửa cùng lúc khi đổi sang Roboto.
+
+### Existing behavior preserved
+- Không đổi bố cục/màu sắc/logic nào khác ngoài font-family và độ rộng ô search.
+- `font-serif`/`font-sans`/`font-mono` vẫn là các class Tailwind dùng được như cũ, chỉ đổi giá trị font thực tế đứng sau.
+
+### Tests/checks run
+- `npx tsc --noEmit` — pass.
+- `npx eslint` trên các file đã sửa — pass.
+- `npx next build` — build thành công, tất cả routes (29/29) generate OK, không lỗi.
+- Chưa test UI trên browser thật để xác nhận font hiển thị đúng (không có dev server chạy trong phiên này).
+
+### Risks / Notes
+- Roboto tải qua Google Fonts lúc build — cần mạng khi build/dev lần đầu (giống Geist trước đó, không phát sinh rủi ro mới).
+- Nếu sau này cần phân biệt font heading riêng (serif thời trang) thì cần thêm 1 font khác và tách lại `--font-serif`, hiện tại đã gộp chung theo đúng yêu cầu.
+
+---
+
+## 2026-07-04 — PUBLIC-OUTFITS-REMOVE-HERO — Xoá hero banner ở `/outfits`
+
+### Files changed
+- `src/app/(public)/outfits/page.tsx`: xoá section hero (tiêu đề "Khám phá outfit phù hợp với bạn", đoạn mô tả, 2 nút CTA, stats row `1,248+/12+/3.6K+/100%`, và ảnh collage 3 khối gradient bên phải) theo yêu cầu không cần thiết nữa; xoá luôn hằng số `HERO_STATS` không còn dùng
+
+### Summary
+- Trang `/outfits` giờ bắt đầu ngay bằng section Search + Style filter (không còn banner phía trên).
+
+### Existing behavior preserved
+- Search box, style chips, outfit grid, pagination, `SeoContentBlock` ở cuối trang giữ nguyên logic như task trước (`PUBLIC-OUTFITS-SEARCH-FILTER`).
+- `metadata` (title/description) của trang không đổi.
+
+### Tests/checks run
+- `npx tsc --noEmit` — pass.
+- `npx eslint "src/app/(public)/outfits/page.tsx"` — pass.
+- Chưa test UI trên browser thật trong phiên này.
+
+### Risks / Notes
+- Không còn hero nên trang thiếu phần giới thiệu/CTA đầu trang — nếu sau này cần lại banner nhỏ gọn hơn thì làm task riêng.
+
+---
+
+## 2026-07-04 — PUBLIC-OUTFITS-SEARCH-FILTER — Search + Style filter cho `/outfits` + ẩn menu top nav
+
+### Files changed
+- `src/server/outfits/outfit.service.ts`: `ListPublicOutfitsParams` thêm `keyword?`, `styleSlug?`; `listPublicOutfits()` filter theo `name`/`outfitCode` (contains, insensitive) và `style.slug`; `PublicOutfitListItem` trả kèm `style: { name } | null`; `StyleOption` thêm field `slug` (dùng để build link filter ở public page); `getDistinctStyles()` select thêm `slug`
+- `src/app/(public)/outfits/page.tsx`: xoá `STYLE_CHIPS` hardcode, thay bằng style chips lấy từ `getDistinctStyles()` (data thật, có state active theo `?style=slug`); thêm search form (GET `/outfits?q=...`) tìm theo tên/mã code; thêm helper `buildQuery()` giữ nguyên `q`/`style` khi đổi trang hoặc đổi filter; cập nhật section header + empty state hiển thị theo trạng thái tìm kiếm/lọc; pagination links dùng `buildQuery()` thay vì chỉ `?page=`
+- `src/components/public/PublicHeader.tsx`: bỏ `NAV_LINKS` + block `<nav>` menu giữa header (Outfit/Phong cách/Mới nhất) theo yêu cầu ẩn menu; icon search giờ là `Link` trỏ thẳng tới `/outfits` (nơi đặt ô tìm kiếm thật) thay vì button không có action; bỏ `usePathname` không còn dùng
+
+### Summary
+- Banner hero (1 ảnh lớn + 2 ảnh nhỏ) ở `/outfits` giữ nguyên UI cũ theo yêu cầu — không chỉnh sửa.
+- `/outfits` giờ có ô tìm kiếm outfit theo tên/mã code + chips lọc theo Style thật từ DB (bảng `styles`), thay thế chips hardcode cũ không filter được.
+- Menu "Outfit, Phong cách, Mới nhất" ở top header đã ẩn theo yêu cầu (không cần thiết).
+
+### Existing behavior preserved
+- `getDistinctStyles()` vẫn trả `id`/`name` như cũ cho các nơi dùng khác (`manager/outfits`, `OutfitForm`, `OutfitFilters`) — chỉ mở rộng thêm `slug`, không đổi field cũ.
+- `listPublicOutfits()` khi không truyền `keyword`/`styleSlug` hoạt động y hệt trước (chỉ lọc `status=active`, `publishedAt not null`, `deletedAt null`).
+- Outfit detail page (`/outfit/[slugCode]`), tracking, redirect `/go` không bị đụng tới.
+
+### Tests/checks run
+- `npx tsc --noEmit` — pass, không lỗi.
+- `npx eslint` trên 3 file đã sửa — pass, không lỗi.
+- Chưa chạy `pnpm test` (không có test liên quan tới public outfits list) và chưa test UI trên browser thật (không có DB/dev server chạy sẵn trong phiên này).
+
+### Risks / Notes
+- Search hiện là substring match đơn giản (Prisma `contains`, không phân biệt hoa thường) — chưa có debounce/autocomplete, submit qua form GET (không cần JS).
+- Style chips ẩn nếu bảng `styles` không có style active nào (tránh hiển thị section rỗng).
+- Nên test thủ công trên browser với dữ liệu thật để xác nhận UI/UX trước khi coi là done hoàn toàn.
+
+---
+
+## 2026-07-04 — I18N-OUTFITS-TAXONOMY — Việt hoá Outfits manager + CRUD Style/Outfit Type
+
+### Files changed
+
+**Việt hoá `/manager/outfits` + `/manager/outfits/new`:**
+- `src/app/manager/(protected)/outfits/page.tsx`: title "Outfit", mô tả tổng số outfit, nút "+ Tạo Outfit", empty state, pagination "Trang X / Y", "Trước"/"Sau"
+- `src/app/manager/(protected)/outfits/new/page.tsx`: "Tạo Outfit mới", "← Quay lại Outfit", mô tả draft
+- `src/components/manager/OutfitFilters.tsx`: placeholder tìm kiếm, nút "Tìm kiếm", label các select ("Tất cả trạng thái/phong cách/loại outfit"), status label map tiếng Việt (Nháp/Đang hiển thị/Đã ẩn/Đã xoá), "Đang tải…"
+- `src/components/manager/OutfitTable.tsx`: header cột (Ảnh bìa/Tên/Mã/Trạng thái/Sản phẩm/Ngày đăng), nút "Sửa"
+- `src/components/manager/OutfitForm.tsx`: toàn bộ label panel (Ảnh bìa/Thông tin cơ bản/Phân loại/Trạng thái), placeholder, validation message, toast message, nút (Tạo Outfit/Lưu thay đổi/Đặt Đăng/Đặt Ẩn/Đặt Nháp), `STATUS_LABELS` map
+
+**Module mới — Quản lý Style & Outfit Type (taxonomy):**
+- `src/server/taxonomy/taxonomy.service.ts`: **TẠO MỚI** — `listTaxonomy`, `createTaxonomy`, `updateTaxonomy`, `softDeleteTaxonomy`; dùng chung 1 service cho cả `Style` và `OutfitType` (2 model giống hệt cấu trúc) qua `TaxonomyKind = 'style' | 'outfitType'`
+- `src/app/api/manager/taxonomy/[kind]/route.ts`: **TẠO MỚI** — `GET` (list, `taxonomy.view`) + `POST` (create, `taxonomy.manage`); `kind` param nhận `styles` hoặc `outfit-types`
+- `src/app/api/manager/taxonomy/[kind]/[id]/route.ts`: **TẠO MỚI** — `PATCH` (update name/slug/status) + `DELETE` (soft-delete, chặn nếu đang được outfit sử dụng)
+- `src/components/manager/TaxonomyFormDialog.tsx`: **TẠO MỚI** — modal create/edit dùng chung cho cả 2 kind, auto-gen slug từ tên (giữ nguyên logic `generateSlug` dùng cho outfit)
+- `src/components/manager/TaxonomyActions.tsx`: **TẠO MỚI** — `ToggleTaxonomyStatusButton` (active/inactive) + `DeleteTaxonomyButton` (disable nếu `outfitCount > 0`)
+- `src/app/manager/(protected)/taxonomy/page.tsx`: **TẠO MỚI** — trang `/manager/taxonomy`, 2 cột (Phong cách | Loại Outfit), mỗi mục hiển thị tên/slug/status/số outfit đang dùng + nút Sửa/Vô hiệu hoá/Xoá
+- `src/constants/permissions.ts`: thêm `TAXONOMY_VIEW` ("taxonomy.view") + `TAXONOMY_MANAGE` ("taxonomy.manage")
+- `src/constants/routes.ts`: thêm `MANAGER_ROUTES.TAXONOMY` = "/manager/taxonomy"
+- `src/components/manager/ManagerNav.tsx`: thêm mục nav "Phong cách & Loại" (icon `Tags`)
+- `src/app/manager/(protected)/roles/page.tsx` + `src/components/manager/RoleFormDialog.tsx`: thêm `taxonomy` vào `MODULE_LABELS`/`MODULE_ORDER` để hiển thị đúng khi gán quyền
+- `prisma/seed.ts`: thêm 2 permission `taxonomy.view`/`taxonomy.manage` vào `PERMISSION_DEFS`; gán cả 2 cho role `manager` (admin đã có full quyền theo `PERMISSION_DEFS.map(...)`)
+
+### Summary
+
+- Trang `/manager/outfits` và `/manager/outfits/new` (cùng các component con: `OutfitFilters`, `OutfitTable`, `OutfitForm`) nay hiển thị hoàn toàn tiếng Việt thay vì tiếng Anh.
+- Style và Outfit Type trước đây chỉ có thể tạo qua `prisma/seed.ts` (hardcode), không có UI/API quản lý. Đã bổ sung CRUD đầy đủ (tạo/sửa/vô hiệu hoá/xoá) qua trang `/manager/taxonomy`, tăng khả năng mở rộng — admin có thể thêm phong cách/loại outfit mới mà không cần sửa code hay chạy lại seed.
+- Bổ sung quyền `taxonomy.view`/`taxonomy.manage` vào hệ thống phân quyền, theo đúng pattern RBAC hiện có (role → permission), hiển thị trong trang `/manager/roles` khi cấu hình quyền cho từng vai trò.
+
+### Existing behavior preserved
+
+- ✅ `getDistinctStyles()`, `getDistinctOutfitTypes()` trong `outfit.service.ts` — không chạm; trang taxonomy dùng service riêng (`taxonomy.service.ts`) để không ảnh hưởng luồng tạo/sửa outfit
+- ✅ `OutfitForm`, `ProductPicker`, publish/hide/save handlers — không chạm logic, chỉ đổi text
+- ✅ Trang `/manager/outfits/[id]` (edit) — không đổi (ngoài phạm vi yêu cầu), vẫn tiếng Anh — cần Việt hoá ở task riêng nếu cần
+- ✅ `StatusBadge` dùng chung nhiều module (Products/Users/Sync) — không đổi để tránh side-effect ngoài phạm vi outfits
+- ✅ Prisma schema — không đổi (Style/OutfitType đã có sẵn từ trước, chỉ thêm service/API/UI quản lý)
+- ✅ Auth, tracking, sync, permission checks khác — không chạm
+
+### Tests/checks run
+
+- `npx tsc --noEmit` — 0 lỗi ✅
+- `npm run lint` — 0 lỗi, 7 warning pre-existing (test files) ✅
+- `npm run build` — tất cả route compile thành công, gồm route mới `/manager/taxonomy`, `/api/manager/taxonomy/[kind]`, `/api/manager/taxonomy/[kind]/[id]` ✅
+- `npx prisma db seed` — seed lại thành công, 33 permissions (thêm 2 mới), 77 role-permission assignments ✅
+- Manual verify qua `curl` với dev server chạy local (đăng nhập admin, gọi trực tiếp các trang/API):
+  - `/manager/outfits`, `/manager/outfits/new`, `/manager/taxonomy` trả về đúng text tiếng Việt ✅
+  - `POST /api/manager/taxonomy/styles` tạo mới thành công (201) ✅
+  - `PATCH /api/manager/taxonomy/styles/:id` cập nhật tên thành công (200) ✅
+  - Tạo trùng slug → 409 đúng như thiết kế ✅
+  - `DELETE` style chưa dùng → xoá thành công (200); `DELETE` style "Boho" đang được outfit dùng → chặn đúng (409) ✅
+
+### Risks / Notes
+
+- Trang `/manager/outfits/[id]` (edit outfit) vẫn còn text tiếng Anh — ngoài phạm vi task này, nên làm task riêng nếu cần đồng bộ toàn bộ.
+- `softDeleteTaxonomy` chặn xoá cứng nếu còn outfit tham chiếu (đếm qua `_count.outfits`), nhưng cho phép "vô hiệu hoá" (status inactive) độc lập — outfit cũ vẫn giữ liên kết dù style/type bị inactive (giống hành vi Role/User hiện có).
+- Quyền `taxonomy.manage` hiện chỉ gán cho `admin` (toàn quyền) và `manager`; `outfit_staff`/`product_staff`/`viewer` không có quyền quản lý taxonomy (chỉ đọc gián tiếp qua dropdown khi tạo outfit — không cần permission vì `getDistinctStyles/getDistinctOutfitTypes` không gate theo quyền).
+
+---
+
+## 2026-07-03 — SYNC-UUID-FIX — Fix: thêm uuId + deviceId vào MyCollection API clients
+
+### Files changed
+
+- `src/lib/env.ts`: thêm `uuId` (`MYCOLLECTION_UUID`) và `deviceId` (`MYCOLLECTION_DEVICE_ID`) vào `env.sync`
+- `src/server/sync/mycollection-group-list.client.ts`: thêm `uuId?` + `deviceId?` vào `FetchStorefrontGroupListInput`; truyền vào GQL query và variables
+- `src/server/sync/mycollection.client.ts`: thêm `uuId?` + `deviceId?` vào `FetchStorefrontGroupProductListInput`; truyền vào GQL query và variables
+- `src/server/sync/sync-by-url-suffix.service.ts`: thêm `uuId?` + `deviceId?` vào `SyncByUrlSuffixInput`, truyền qua toàn bộ call chain (fetchAllGroups → fetchPageWithRetry → fetchStorefrontGroupProductList)
+- `src/server/sync/sync-products.service.ts`: truyền `env.sync.uuId` + `env.sync.deviceId` vào `fetchStorefrontGroupProductList` trong cron sync
+
+### Summary
+
+**Root cause:** API `mycollection.shop` yêu cầu `uuId` và `deviceId` trong cả 2 endpoints:
+- `storefrontGroupList` (lấy danh sách nhóm)
+- `storefrontGroupProductList` (lấy sản phẩm theo nhóm)
+
+Thiếu 2 params này → server trả lỗi `{"message":"uuid is nil"}`. Đã verify bằng curl test thực tế với urlSuffix `outfitsdepoday`.
+
+**Fix:** Thêm 2 ENV vars mới (optional, fallback rỗng) và propagate qua toàn bộ sync pipeline.
+
+**ENV vars cần bổ sung vào `.env`:**
+```
+MYCOLLECTION_UUID=685bb3a5-316f-4455-a8bf-6a8ebfdaa4ae
+MYCOLLECTION_DEVICE_ID=F358CB297F8082F2C3F32272A523AB48
+```
+
+### Existing behavior preserved
+
+- ✅ `syncProducts()` (cron) — logic giữ nguyên, chỉ thêm 2 params vào fetch call
+- ✅ `syncProductsByUrlSuffix()` — logic giữ nguyên
+- ✅ Tất cả routes, services, components, Prisma schema — không chạm
+- ✅ `uuId`/`deviceId` là optional trong type — không break existing callers nếu không truyền
+
+### Tests/checks run
+
+- `npm run build` — 42 routes compiled, TypeScript 0 errors ✅
+- curl test `storefrontGroupList` với `outfitsdepoday` → 6 groups trả về đúng ✅
+- curl test `storefrontGroupProductList` groupId=3913274 → products trả về đúng ✅
+
+### Risks / Notes
+
+- `uuId` và `deviceId` là credentials từ trình duyệt — nên lưu vào `.env` và không commit lên git. Rotate nếu lộ.
+- Nếu để rỗng (chưa set ENV), API sẽ vẫn trả lỗi `uuid is nil`. **Bắt buộc phải set 2 ENV này** trước khi chạy sync.
+- Các giá trị này lấy từ network tab của trình duyệt khi truy cập `collshp.com/n/{urlSuffix}`.
+
+---
+
+## 2026-07-03 — UI-UPGRADE — Premium UI upgrade: public lookbook + manager SaaS dashboard bám sát reference
+
+### Files changed
+
+**Public components:**
+- `src/components/public/PublicHeader.tsx`: warm ivory header, sticky, backdrop-blur, nav Outfits/Styles/New Looks, Explore CTA button (#9A7654), logo tracking spaced uppercase
+- `src/components/public/PublicFooter.tsx`: minimal fashion footer, brand column + browse nav + bottom copyright, #FAF7F2 bg
+- `src/components/public/OutfitCard.tsx`: rounded-[1.5rem], warm ivory bg (#F3EEE7), tag badge always visible, gradient scrim, outfit code subtle #9A9289
+- `src/components/public/ProductClickCard.tsx`: warm ivory bg, "Tap to view" overlay on hover, rounded-2xl
+- `src/components/public/OutfitHero.tsx`: eyebrow "OUTFIT CODE" champagne, code badge, serif H1, tag badges, Shopee note with pin icon
+
+**Public pages:**
+- `src/app/(public)/outfits/page.tsx`: split hero (editorial left + collage right placeholder), style chips row, warm ivory bg, beautiful empty state (stacked placeholder cards thay vì tiny dot)
+- `src/app/(public)/outfit/[slugCode]/page.tsx`: warm ivory bg, border #E8DED2, items count badge
+
+**Manager shell:**
+- `src/components/manager/ManagerShell.tsx`: bg #F6F7F9, padding 32px
+- `src/components/manager/ManagerSidebar.tsx`: dark bg #111827, 260px wide, rounded-xl user block
+- `src/components/manager/ManagerNav.tsx`: dark sidebar nav, active bg rgba(255,255,255,0.12)
+- `src/components/manager/ManagerTopbar.tsx`: white bg, border #E5E7EB, initials avatar
+- `src/components/manager/LogoutButton.tsx`: styled cho dark sidebar
+- `src/components/manager/PageHeader.tsx`: text-2xl bold, no bottom border
+
+**Manager components:**
+- `src/components/manager/ProductTable.tsx`: thêm Group column, thumbnail 56×56 rounded-xl, row height 72px, Yes/No badges, Actions column
+- `src/components/manager/SyncByUrlSuffixPanel.tsx`: inline card (không còn dialog trigger), kết quả hiển thị ngay bên phải form
+
+**Manager pages:**
+- `src/app/manager/(protected)/page.tsx`: 6 stat cards row, 3-col bottom (Sync Logs · Top Outfits · Top Products)
+- `src/app/manager/(protected)/products/page.tsx`: SyncPanel inline card, filter bar wrapped in card
+- `src/app/manager/(protected)/users/page.tsx`: "Users & Staff" title, "Add staff" button #9A7654, table styled
+- `src/app/manager/(protected)/roles/page.tsx`: "Roles & Permissions" title, permission chips blue, user count large, module sort order
+
+**Service:**
+- `src/server/products/product.service.ts`: thêm `externalGroupName` vào `ProductListItem` type + select + mapping
+
+### Summary
+
+Toàn bộ public site đổi sang warm ivory palette. Hero có split layout. Manager sidebar dark. Dashboard show stat cards + Sync Logs + Top Outfits/Products. Không thay đổi logic/routes/schema.
+
+### Existing behavior preserved
+
+- ✅ Tất cả routes, tracking redirect, auth guards, Prisma schema — không chạm
+- ✅ `externalGroupName` đã có trong DB schema, chỉ thêm vào select
+
+### Tests/checks run
+
+- `npm run lint` — 0 errors, 7 pre-existing warnings ✅
+- `npm run build` — 0 TypeScript errors, 42 routes compiled ✅
+
+### Notes
+
+- Style chips hiện link `/outfits?style=...` — chờ backend filter support.
+- Hero collage dùng gradient placeholder — sẽ live khi có real data.
+
+---
+
+## 2026-07-03 — MANAGER-FULL — Backend vận hành: Sync by urlSuffix + Users CRUD + Roles CRUD + Product Management
+
+### Files changed
+
+**MODULE 1 — Sync by urlSuffix:**
+- `src/server/sync/mycollection-group-list.client.ts`: **TẠO MỚI** — HTTP client cho `storefrontGroupList` API (GQL) — fetch all groups của một urlSuffix, pagination, retry, type guards
+- `src/server/sync/sync-by-url-suffix.service.ts`: **TẠO MỚI** — `syncProductsByUrlSuffix()` — full pipeline: fetchAllGroups → syncOneGroup per group → upsert products → markMissing → ghi sync_log per group → trả `SyncByUrlSuffixResult`
+- `src/app/api/manager/products/sync-by-url-suffix/route.ts`: **TẠO MỚI** — `POST /api/manager/products/sync-by-url-suffix` — auth + `sync.run` permission check, body validation, gọi service, trả totalGroups/Fetched/Created/Updated/Deactivated/groups/errors
+- `src/components/manager/SyncByUrlSuffixPanel.tsx`: **TẠO MỚI** — Client Component dialog: input urlSuffix → POST API → hiển thị kết quả per group (table) + summary stats
+
+**MODULE 2 — Users CRUD:**
+- `src/server/users/user.service.ts`: **UPGRADE** — thêm `getUserDetail`, `createUser`, `updateUser`, `setUserStatus`, `resetUserPassword`, `assignRolesToUser`
+- `src/app/api/manager/users/route.ts`: **TẠO MỚI** — `GET` (list, users.view) + `POST` (create, users.create)
+- `src/app/api/manager/users/[id]/route.ts`: **TẠO MỚI** — `GET` (detail) + `PATCH` (update name/email hoặc status, users.update); tự-disable guard
+- `src/app/api/manager/users/[id]/roles/route.ts`: **TẠO MỚI** — `PUT` (replace all roles, users.update); tự-remove-all-roles guard
+- `src/app/api/manager/users/[id]/password/route.ts`: **TẠO MỚI** — `POST` (reset password min 8 chars, users.update)
+- `src/components/manager/UserFormDialog.tsx`: **TẠO MỚI** — Client Component: create/edit user modal (name, email, password, roles checkboxes)
+- `src/components/manager/UserActions.tsx`: **TẠO MỚI** — `ResetPasswordButton` + `ToggleUserStatusButton` — client components
+- `src/app/manager/(protected)/users/page.tsx`: **UPGRADE** — Users page đầy đủ: list table + Add Staff button + Edit/Enable/Disable/Reset Password per row; permission-gated
+
+**MODULE 3 — Roles CRUD:**
+- `src/server/roles/role.service.ts`: **UPGRADE** — thêm `getRoleById`, `listAllPermissions`, `createRole`, `updateRole` (với system role guard cho admin), `setRolePermissions`
+- `src/app/api/manager/roles/route.ts`: **TẠO MỚI** — `GET` (list + all permissions, roles.view) + `POST` (create role, roles.manage)
+- `src/app/api/manager/roles/[id]/route.ts`: **TẠO MỚI** — `GET` (detail) + `PATCH` (update, roles.manage); cannot disable admin role
+- `src/app/api/manager/roles/[id]/permissions/route.ts`: **TẠO MỚI** — `PUT` (replace all permissions, roles.manage)
+- `src/components/manager/RoleFormDialog.tsx`: **TẠO MỚI** — Client Component: create/edit role modal với permission picker theo module (toggle module all, toggle individual, count display)
+- `src/app/manager/(protected)/roles/page.tsx`: **UPGRADE** — Roles page: Create Role button + Edit button per role; permissions grouped by module; system role badge
+
+**MODULE 4 — Product management:**
+- `src/server/products/product.service.ts`: **UPGRADE** — thêm `getDistinctGroupIds(urlSuffix?)` để feed filter dropdown
+- `src/components/manager/ProductFilters.tsx`: **UPGRADE** — thêm `externalGroupId` select, `hasMockup` select (all/has/missing), `hasProductDna` select (all/has/missing); style nhất quán `rounded-xl`
+- `src/app/manager/(protected)/products/page.tsx`: **UPGRADE** — thêm `externalGroupId`, `hasMockup`, `hasProductDna` params; load `groupIdOptions`; Sync by URL button (canSync guard)
+- `src/components/manager/RawJsonViewer.tsx`: **TẠO MỚI** — Client Component: "View Raw JSON" button → dialog → fetch `?rawJson=1` → hiển thị pre-formatted JSON on dark bg
+- `src/app/manager/(protected)/products/[id]/page.tsx`: **UPGRADE** — thêm `RawJsonViewer` component trong "Raw Data" InfoPanel
+
+### Summary
+
+**MODULE 1 — Sync by urlSuffix only:**
+- Flow: nhập 1 urlSuffix → API tự gọi `storefrontGroupList` để lấy all groups → sync từng group tuần tự → upsert products → ghi sync_log per group → trả kết quả breakdown
+- Không ghi đè `mockup_image_url`, `product_dna` (reuse existing upsert logic)
+- Retry 3 lần per group nếu fetch thất bại
+- Permission guard: `sync.run`
+- Không dùng lock (manual sync là intentional trigger)
+
+**MODULE 2 — Staff/User management:**
+- Create Staff: name + email + password (min 8 chars) + assign roles
+- Edit user: name, email, roles (replace all)
+- Enable/Disable: soft status change, không xóa cứng; không thể tự-disable
+- Reset password: hash với scrypt (dùng lại `hashPassword` từ `src/lib/auth.ts`)
+- Permission tiers: `users.view` để list, `users.create` để tạo, `users.update` để edit/disable/reset/assign roles
+
+**MODULE 3 — Dynamic Roles & Permissions:**
+- Role là DB-driven, không hardcode
+- Create role: name + code (lowercase/underscore) + description + permissions
+- Edit role: name + description + permissions (code không đổi sau khi tạo)
+- Admin role: system role, không thể bị disabled (`updateRole` guard)
+- Permissions seeded từ DB, grouped by module trong UI
+- `setRolePermissions`: replace all (delete + recreate)
+
+**MODULE 4 — Product management:**
+- Filters mới: missing mockup (`hasMockup=false`), missing DNA (`hasProductDna=false`), group ID
+- Raw JSON viewer: load lazily, render on dark background, close button
+- Sync by URL button trong Products page header (permission-gated `sync.run`)
+
+### Existing behavior preserved
+
+- ✅ `syncProducts()` (cron sync) — không chạm, vẫn dùng groupIds từ ENV
+- ✅ `POST /api/manager/products/sync` (sync manual với groupId) — không chạm
+- ✅ `upsertProductFromSource()` — không chạm; `mockup_image_url` + `product_dna` vẫn preserved
+- ✅ `listRolesWithPermissions()` — không chạm; chỉ thêm functions
+- ✅ `listUsers()` — không chạm; chỉ thêm functions
+- ✅ `getProductById`, `updateProductFields`, `listProducts` — không chạm
+- ✅ Auth, session, middleware, tracking — không chạm
+- ✅ Public routes — không chạm
+- ✅ Prisma schema — không chạm (không cần migration mới)
+- ✅ Không thêm package mới
+
+### Tests/checks run
+
+- `npm run lint` — 0 errors, 7 warnings (pre-existing từ test files) ✅
+- `npm run build` — 42 routes compiled, TypeScript 0 errors ✅
+
+### Risks / Notes
+
+- `assignRolesToUser` dùng `deleteMany + createMany` (non-atomic). Race condition nếu 2 admin assign roles cùng lúc cho 1 user. Chấp nhận cho MVP.
+- `setRolePermissions` tương tự — non-atomic. Chấp nhận cho MVP.
+- Role code không thể thay đổi sau khi tạo (disabled field trong edit dialog). Để giữ integrity với permission checks và seed data.
+- Admin role không thể disable — guard ở service layer. Admin có thể vẫn edit permissions của admin role nếu muốn (intentional flexibility cho super-admin).
+- `SyncByUrlSuffixPanel` không giới hạn số lần trigger — manager có thể bấm nhiều lần. Chấp nhận MVP; thêm rate limit sau nếu cần.
+- `RawJsonViewer` fetch lazily khi mở dialog — không cache kết quả nếu đóng rồi mở lại (re-fetch). Chấp nhận MVP.
+
+---
+
 ## 2026-07-03 — UI-PREMIUM — Full UI Upgrade: Public Site + Manager SaaS Dashboard
 
 ### Files changed

@@ -8,6 +8,7 @@ import { MANAGER_ROUTES } from '@/constants/routes';
 import PageHeader from '@/components/manager/PageHeader';
 import StatusBadge from '@/components/manager/StatusBadge';
 import ProductEditForm from '@/components/manager/ProductEditForm';
+import RawJsonViewer from '@/components/manager/RawJsonViewer';
 import type { DataScope } from '@/lib/permissions';
 
 type Props = { params: Promise<{ id: string }> };
@@ -41,7 +42,7 @@ export default async function ManagerProductDetailPage({ params }: Props) {
   if (scope === 'none') {
     return (
       <main className="p-6 lg:p-8">
-        <p className="text-sm text-slate-400">You do not have permission to view this product.</p>
+        <p className="text-sm text-slate-400">Bạn không có quyền xem sản phẩm này.</p>
       </main>
     );
   }
@@ -60,7 +61,7 @@ export default async function ManagerProductDetailPage({ params }: Props) {
         href={MANAGER_ROUTES.PRODUCTS}
         className="w-fit text-[12px] font-medium text-slate-400 transition-colors hover:text-slate-900"
       >
-        ← Back to Products
+        ← Quay lại Sản phẩm
       </Link>
 
       {/* Header */}
@@ -77,18 +78,18 @@ export default async function ManagerProductDetailPage({ params }: Props) {
             ) : (
               <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-50 px-2.5 py-0.5 text-[11px] font-medium text-slate-400">
                 <span className="h-1.5 w-1.5 rounded-full bg-slate-200" />
-                No DNA
+                Chưa có DNA
               </span>
             )}
             {product.mockupImageUrl ? (
               <span className="inline-flex items-center gap-1.5 rounded-full bg-sky-50 px-2.5 py-0.5 text-[11px] font-semibold text-sky-600">
                 <span className="h-1.5 w-1.5 rounded-full bg-sky-500" />
-                Mockup
+                Ảnh mockup
               </span>
             ) : (
               <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-50 px-2.5 py-0.5 text-[11px] font-medium text-slate-400">
                 <span className="h-1.5 w-1.5 rounded-full bg-slate-200" />
-                No Mockup
+                Chưa có mockup
               </span>
             )}
           </div>
@@ -113,10 +114,10 @@ export default async function ManagerProductDetailPage({ params }: Props) {
 
         {/* Right: read-only metadata */}
         <div className="flex flex-col gap-4">
-          <InfoPanel title="Source Info">
+          <InfoPanel title="Thông tin nguồn">
             <dl className="flex flex-col gap-2.5 text-[13px]">
               <div className="flex justify-between gap-2">
-                <dt className="shrink-0 text-slate-400">Source</dt>
+                <dt className="shrink-0 text-slate-400">Nguồn</dt>
                 <dd>
                   <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-[11px] font-semibold text-slate-600">
                     {product.urlSuffix}
@@ -125,7 +126,7 @@ export default async function ManagerProductDetailPage({ params }: Props) {
               </div>
               {product.externalGroupName && (
                 <div className="flex justify-between gap-2">
-                  <dt className="shrink-0 text-slate-400">Group</dt>
+                  <dt className="shrink-0 text-slate-400">Nhóm</dt>
                   <dd className="text-right text-[11px] text-slate-700">{product.externalGroupName}</dd>
                 </div>
               )}
@@ -148,10 +149,10 @@ export default async function ManagerProductDetailPage({ params }: Props) {
             </dl>
           </InfoPanel>
 
-          <InfoPanel title="Links">
+          <InfoPanel title="Liên kết">
             <dl className="flex flex-col gap-3 text-[13px]">
               <div className="flex flex-col gap-1">
-                <dt className="text-slate-400">Affiliate URL</dt>
+                <dt className="text-slate-400">URL Affiliate</dt>
                 <dd>
                   {product.affiliateUrl ? (
                     <a
@@ -185,18 +186,22 @@ export default async function ManagerProductDetailPage({ params }: Props) {
             </dl>
           </InfoPanel>
 
-          <InfoPanel title="Timestamps">
+          <InfoPanel title="Dữ liệu thô">
+            <RawJsonViewer productId={product.id} />
+          </InfoPanel>
+
+          <InfoPanel title="Thời gian">
             <dl className="flex flex-col gap-2.5 text-[13px]">
               <div className="flex justify-between gap-2">
-                <dt className="text-slate-400">Last Synced</dt>
+                <dt className="text-slate-400">Đồng bộ lần cuối</dt>
                 <dd className="text-[11px] text-slate-600">{formatDate(product.lastSyncedAt)}</dd>
               </div>
               <div className="flex justify-between gap-2">
-                <dt className="text-slate-400">Created</dt>
+                <dt className="text-slate-400">Ngày tạo</dt>
                 <dd className="text-[11px] text-slate-600">{formatDate(product.createdAt)}</dd>
               </div>
               <div className="flex justify-between gap-2">
-                <dt className="text-slate-400">Updated</dt>
+                <dt className="text-slate-400">Cập nhật</dt>
                 <dd className="text-[11px] text-slate-600">{formatDate(product.updatedAt)}</dd>
               </div>
             </dl>

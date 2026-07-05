@@ -45,7 +45,9 @@
       "Bash(pnpm typecheck *)",
       "Bash(npm run *)",
       "Bash(npx pnpm *)",
-      "Bash(pnpm lint *)"
+      "Bash(pnpm lint *)",
+      "Bash(mkdir -p /Users/quang/Documents/outfit-click/src/app/api/manager/users/\\\\[id\\\\]/roles)",
+      "Bash(mkdir -p /Users/quang/Documents/outfit-click/src/app/api/manager/users/\\\\[id\\\\]/password)"
     ],
     "additionalDirectories": [
       "/Users/quang/Documents/outfit-click/src/app/(public)/outfit"

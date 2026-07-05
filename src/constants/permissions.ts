@@ -10,6 +10,9 @@ export const PERMISSIONS = {
   ROLES_VIEW: "roles.view",
   ROLES_MANAGE: "roles.manage",
 
+  TAXONOMY_VIEW: "taxonomy.view",
+  TAXONOMY_MANAGE: "taxonomy.manage",
+
   PRODUCTS_VIEW_ALL: "products.view_all",
   PRODUCTS_VIEW_ASSIGNED: "products.view_assigned",
   PRODUCTS_UPDATE: "products.update",

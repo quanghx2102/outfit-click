@@ -81,7 +81,7 @@ export default function ProductEditForm({
     });
     if (!res.ok) {
       const data = (await res.json()) as { error?: string };
-      showMsg('error', data.error ?? 'Request failed.');
+      showMsg('error', data.error ?? 'Yêu cầu thất bại.');
       return false;
     }
     return true;
@@ -93,11 +93,11 @@ export default function ProductEditForm({
     try {
       const ok = await patchProduct({ productDna: dna.trim() || null });
       if (ok) {
-        showMsg('success', 'Product DNA saved.');
+        showMsg('success', 'Đã lưu Product DNA.');
         router.refresh();
       }
     } catch {
-      showMsg('error', 'Network error.');
+      showMsg('error', 'Lỗi mạng.');
     } finally {
       setSaving(null);
     }
@@ -109,11 +109,11 @@ export default function ProductEditForm({
     try {
       const ok = await patchProduct({ status });
       if (ok) {
-        showMsg('success', 'Status updated.');
+        showMsg('success', 'Đã cập nhật trạng thái.');
         router.refresh();
       }
     } catch {
-      showMsg('error', 'Network error.');
+      showMsg('error', 'Lỗi mạng.');
     } finally {
       setSaving(null);
     }
@@ -136,13 +136,13 @@ export default function ProductEditForm({
       const res = await fetch('/api/manager/media/upload', { method: 'POST', body: fd });
       if (!res.ok) {
         const data = (await res.json()) as { error?: string };
-        showMsg('error', data.error ?? 'Upload failed.');
+        showMsg('error', data.error ?? 'Tải ảnh thất bại.');
       } else {
-        showMsg('success', 'Mockup uploaded.');
+        showMsg('success', 'Đã tải ảnh mockup.');
         router.refresh();
       }
     } catch {
-      showMsg('error', 'Network error.');
+      showMsg('error', 'Lỗi mạng.');
     } finally {
       setSaving(null);
       if (fileInputRef.current) fileInputRef.current.value = '';
@@ -157,11 +157,11 @@ export default function ProductEditForm({
       <InlineMsg msg={msg} />
 
       {/* ── Image ── */}
-      <Panel title="Product Image">
+      <Panel title="Ảnh sản phẩm">
         <div className="flex flex-wrap items-start gap-5">
           <div className="flex flex-col gap-1.5">
             <p className="text-[11px] text-slate-400">
-              {hasMockup ? 'Display (mockup)' : 'Display (source)'}
+              {hasMockup ? 'Hiển thị (mockup)' : 'Hiển thị (nguồn)'}
             </p>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
@@ -172,7 +172,7 @@ export default function ProductEditForm({
           </div>
           {hasMockup && (
             <div className="flex flex-col gap-1.5">
-              <p className="text-[11px] text-slate-400">Source (original)</p>
+              <p className="text-[11px] text-slate-400">Ảnh gốc (nguồn)</p>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={product.imageUrl}
@@ -200,11 +200,11 @@ export default function ProductEditForm({
               onClick={() => fileInputRef.current?.click()}
               className="rounded-xl border-slate-200 text-slate-700 hover:border-slate-950 hover:text-slate-950"
             >
-              {saving === 'mockup' ? 'Uploading…' : hasMockup ? 'Replace Mockup' : 'Upload Mockup'}
+              {saving === 'mockup' ? 'Đang tải…' : hasMockup ? 'Thay ảnh mockup' : 'Tải ảnh mockup'}
             </Button>
             {hasMockup && (
               <span className="text-[11px] text-slate-400">
-                Will replace the current mockup.
+                Sẽ thay thế ảnh mockup hiện tại.
               </span>
             )}
           </div>
@@ -217,7 +217,7 @@ export default function ProductEditForm({
           <Textarea
             value={dna}
             onChange={(e) => setDna(e.target.value)}
-            placeholder="Product description for AI fashion affiliate workflow…"
+            placeholder="Mô tả sản phẩm cho quy trình affiliate thời trang AI…"
             rows={7}
             disabled={!canUpdateDna || isBusy}
             className="rounded-xl border-slate-200 text-sm text-slate-700 placeholder:text-slate-300 focus-visible:ring-slate-950"
@@ -230,7 +230,7 @@ export default function ProductEditForm({
                 onClick={saveDna}
                 className="rounded-xl bg-slate-950 text-white hover:bg-slate-800"
               >
-                {saving === 'dna' ? 'Saving…' : 'Save DNA'}
+                {saving === 'dna' ? 'Đang lưu…' : 'Lưu DNA'}
               </Button>
             </div>
           )}
@@ -239,7 +239,7 @@ export default function ProductEditForm({
 
       {/* ── Status ── */}
       {canUpdate && (
-        <Panel title="Status">
+        <Panel title="Trạng thái">
           <div className="flex items-center gap-6">
             <div className="flex gap-5">
               {(['active', 'inactive'] as const).map((s) => (
@@ -253,7 +253,7 @@ export default function ProductEditForm({
                     disabled={isBusy}
                     className="h-4 w-4 accent-slate-950"
                   />
-                  <span className="capitalize text-slate-700">{s}</span>
+                  <span className="text-slate-700">{s === 'active' ? 'Đang hoạt động' : 'Tạm ẩn'}</span>
                 </label>
               ))}
             </div>
@@ -263,7 +263,7 @@ export default function ProductEditForm({
               onClick={saveStatus}
               className="rounded-xl bg-slate-950 text-white hover:bg-slate-800"
             >
-              {saving === 'status' ? 'Saving…' : 'Save Status'}
+              {saving === 'status' ? 'Đang lưu…' : 'Lưu trạng thái'}
             </Button>
           </div>
         </Panel>

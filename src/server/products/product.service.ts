@@ -114,6 +114,7 @@ export interface ListProductsParams {
 export interface ProductListItem {
   id: string;
   urlSuffix: string;
+  externalGroupName: string | null;
   name: string;
   imageUrl: string;
   mockupImageUrl: string | null;
@@ -162,6 +163,7 @@ export async function listProducts(
       select: {
         id: true,
         urlSuffix: true,
+        externalGroupName: true,
         name: true,
         imageUrl: true,
         mockupImageUrl: true,
@@ -177,6 +179,7 @@ export async function listProducts(
     items: rows.map((p) => ({
       id: p.id,
       urlSuffix: p.urlSuffix,
+      externalGroupName: p.externalGroupName,
       name: p.name,
       imageUrl: p.imageUrl,
       mockupImageUrl: p.mockupImageUrl,
@@ -207,6 +210,22 @@ export async function getDistinctUrlSuffixes(): Promise<string[]> {
     orderBy: { urlSuffix: 'asc' },
   });
   return rows.map((r) => r.urlSuffix);
+}
+
+export async function getDistinctGroupIds(urlSuffix?: string): Promise<string[]> {
+  const rows = await prisma.product.findMany({
+    where: {
+      deletedAt: null,
+      externalGroupId: { not: null },
+      ...(urlSuffix ? { urlSuffix } : {}),
+    },
+    select: { externalGroupId: true },
+    distinct: ['externalGroupId'],
+    orderBy: { externalGroupId: 'asc' },
+  });
+  return rows
+    .map((r) => r.externalGroupId)
+    .filter((id): id is string => id !== null);
 }
 
 export interface PickerProductItem {

@@ -13,6 +13,13 @@ import type { StyleOption, OutfitTypeOption } from '@/server/outfits/outfit.serv
 const selectClass =
   'h-9 w-full rounded-xl border border-slate-200 bg-white px-3 text-[13px] text-slate-700 outline-none transition-colors focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-1 disabled:opacity-50';
 
+const STATUS_LABELS: Record<string, string> = {
+  draft: 'Nháp',
+  active: 'Đang hiển thị',
+  hidden: 'Đã ẩn',
+  deleted: 'Đã xoá',
+};
+
 // Serializable subset — no Date fields
 export type OutfitFormData = {
   id: string;
@@ -120,9 +127,9 @@ export default function OutfitForm({
   }
 
   async function handleCreate() {
-    if (!name.trim()) { showMsg('error', 'Name is required.'); return; }
-    if (!slug.trim()) { showMsg('error', 'Slug is required.'); return; }
-    if (!coverFile) { showMsg('error', 'Cover image is required.'); return; }
+    if (!name.trim()) { showMsg('error', 'Vui lòng nhập tên.'); return; }
+    if (!slug.trim()) { showMsg('error', 'Vui lòng nhập slug.'); return; }
+    if (!coverFile) { showMsg('error', 'Vui lòng chọn ảnh bìa.'); return; }
 
     setSaving('fields');
     setMsg(null);
@@ -139,20 +146,20 @@ export default function OutfitForm({
       const res = await fetch('/api/manager/outfits', { method: 'POST', body: fd });
       const data = (await res.json()) as { id?: string; error?: string };
       if (!res.ok) {
-        showMsg('error', data.error ?? 'Failed to create outfit.');
+        showMsg('error', data.error ?? 'Tạo outfit thất bại.');
         return;
       }
       router.push(`/manager/outfits/${data.id}`);
     } catch {
-      showMsg('error', 'Network error.');
+      showMsg('error', 'Lỗi mạng.');
     } finally {
       setSaving(null);
     }
   }
 
   async function handleSaveFields() {
-    if (!name.trim()) { showMsg('error', 'Name is required.'); return; }
-    if (!slug.trim()) { showMsg('error', 'Slug is required.'); return; }
+    if (!name.trim()) { showMsg('error', 'Vui lòng nhập tên.'); return; }
+    if (!slug.trim()) { showMsg('error', 'Vui lòng nhập slug.'); return; }
 
     setSaving('fields');
     setMsg(null);
@@ -172,13 +179,13 @@ export default function OutfitForm({
       });
       const data = (await res.json()) as { error?: string };
       if (!res.ok) {
-        showMsg('error', data.error ?? 'Failed to save.');
+        showMsg('error', data.error ?? 'Lưu thất bại.');
         return;
       }
-      showMsg('success', 'Saved.');
+      showMsg('success', 'Đã lưu.');
       router.refresh();
     } catch {
-      showMsg('error', 'Network error.');
+      showMsg('error', 'Lỗi mạng.');
     } finally {
       setSaving(null);
     }
@@ -201,13 +208,13 @@ export default function OutfitForm({
       const res = await fetch('/api/manager/media/upload', { method: 'POST', body: fd });
       const data = (await res.json()) as { error?: string };
       if (!res.ok) {
-        showMsg('error', data.error ?? 'Upload failed.');
+        showMsg('error', data.error ?? 'Tải ảnh thất bại.');
       } else {
-        showMsg('success', 'Cover updated.');
+        showMsg('success', 'Đã cập nhật ảnh bìa.');
         router.refresh();
       }
     } catch {
-      showMsg('error', 'Network error.');
+      showMsg('error', 'Lỗi mạng.');
     } finally {
       setSaving(null);
       if (coverInputRef.current) coverInputRef.current.value = '';
@@ -226,12 +233,12 @@ export default function OutfitForm({
       <InlineMsg msg={msg} />
 
       {/* ── Cover Image ── */}
-      <Panel title="Cover Image">
+      <Panel title="Ảnh bìa">
         {(coverPreview ?? initialData?.coverImageUrl) && (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={coverPreview ?? initialData!.coverImageUrl}
-            alt="Cover preview"
+            alt="Xem trước ảnh bìa"
             className="mb-4 h-48 w-auto max-w-xs rounded-xl border border-slate-100 object-cover"
           />
         )}
@@ -239,7 +246,7 @@ export default function OutfitForm({
         {isCreate ? (
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="cover-create" className="text-[12px] font-medium text-slate-600">
-              Cover Image <span className="text-red-400">*</span>
+              Ảnh bìa <span className="text-red-400">*</span>
             </Label>
             <input
               id="cover-create"
@@ -249,7 +256,7 @@ export default function OutfitForm({
               disabled={isBusy}
               className="text-sm text-slate-500 file:mr-3 file:rounded-xl file:border file:border-slate-200 file:bg-white file:px-3 file:py-1 file:text-[12px] file:font-medium file:text-slate-600 file:transition-colors hover:file:border-slate-950 hover:file:text-slate-950"
             />
-            <p className="text-[11px] text-slate-400">JPG, PNG, or WEBP. Max 5MB.</p>
+            <p className="text-[11px] text-slate-400">JPG, PNG hoặc WEBP. Tối đa 5MB.</p>
           </div>
         ) : (
           canUpdate && (
@@ -269,26 +276,26 @@ export default function OutfitForm({
                 onClick={() => coverInputRef.current?.click()}
                 className="rounded-xl border-slate-200 text-slate-700 hover:border-slate-950 hover:text-slate-950"
               >
-                {saving === 'cover' ? 'Uploading…' : 'Replace Cover'}
+                {saving === 'cover' ? 'Đang tải lên…' : 'Đổi ảnh bìa'}
               </Button>
-              <span className="text-[11px] text-slate-400">JPG, PNG, or WEBP. Max 5MB.</span>
+              <span className="text-[11px] text-slate-400">JPG, PNG hoặc WEBP. Tối đa 5MB.</span>
             </div>
           )
         )}
       </Panel>
 
       {/* ── Basic Info ── */}
-      <Panel title="Basic Info">
+      <Panel title="Thông tin cơ bản">
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="outfit-name" className="text-[12px] font-medium text-slate-600">
-              Name <span className="text-red-400">*</span>
+              Tên <span className="text-red-400">*</span>
             </Label>
             <Input
               id="outfit-name"
               value={name}
               onChange={(e) => handleNameChange(e.target.value)}
-              placeholder="e.g. Phối đồ đi chơi nữ năng động"
+              placeholder="VD: Phối đồ đi chơi nữ năng động"
               disabled={(!isCreate && !canUpdate) || isBusy}
               maxLength={255}
               className="rounded-xl border-slate-200 text-[13px] text-slate-700 placeholder:text-slate-300 focus-visible:ring-slate-950"
@@ -309,13 +316,13 @@ export default function OutfitForm({
               className="rounded-xl border-slate-200 font-mono text-[13px] text-slate-700 placeholder:text-slate-300 focus-visible:ring-slate-950"
             />
             <p className="text-[11px] text-slate-400">
-              Auto-generated from name. Lowercase, digits, hyphens. Must be unique.
+              Tự động tạo từ tên. Chữ thường, số, dấu gạch ngang. Phải là duy nhất.
             </p>
           </div>
 
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="outfit-description" className="text-[12px] font-medium text-slate-600">
-              Description
+              Mô tả
             </Label>
             <Textarea
               id="outfit-description"
@@ -331,11 +338,11 @@ export default function OutfitForm({
       </Panel>
 
       {/* ── Classification ── */}
-      <Panel title="Classification">
+      <Panel title="Phân loại">
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="outfit-style" className="text-[12px] font-medium text-slate-600">
-              Style
+              Phong cách
             </Label>
             <select
               id="outfit-style"
@@ -344,7 +351,7 @@ export default function OutfitForm({
               className={selectClass}
               disabled={(!isCreate && !canUpdate) || isBusy}
             >
-              <option value="">— No style —</option>
+              <option value="">— Không có phong cách —</option>
               {styleOptions.map((s) => (
                 <option key={s.id} value={s.id}>
                   {s.name}
@@ -355,7 +362,7 @@ export default function OutfitForm({
 
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="outfit-type" className="text-[12px] font-medium text-slate-600">
-              Outfit Type
+              Loại Outfit
             </Label>
             <select
               id="outfit-type"
@@ -364,7 +371,7 @@ export default function OutfitForm({
               className={selectClass}
               disabled={(!isCreate && !canUpdate) || isBusy}
             >
-              <option value="">— No type —</option>
+              <option value="">— Không có loại —</option>
               {outfitTypeOptions.map((t) => (
                 <option key={t.id} value={t.id}>
                   {t.name}
@@ -377,7 +384,7 @@ export default function OutfitForm({
 
       {/* ── Status (edit only) ── */}
       {!isCreate && canUpdate && statusOptions.length > 0 && (
-        <Panel title="Status">
+        <Panel title="Trạng thái">
           <div className="flex flex-col gap-3">
             <select
               value={status}
@@ -387,7 +394,7 @@ export default function OutfitForm({
             >
               {statusOptions.map((s) => (
                 <option key={s} value={s}>
-                  {s.charAt(0).toUpperCase() + s.slice(1)}
+                  {STATUS_LABELS[s] ?? s}
                 </option>
               ))}
             </select>
@@ -401,7 +408,7 @@ export default function OutfitForm({
                     onClick={() => setStatus('active')}
                     className="rounded-xl bg-emerald-600 text-[12px] text-white hover:bg-emerald-700"
                   >
-                    Set Publish
+                    Đặt Đăng
                   </Button>
                 )}
                 {canHide && (
@@ -412,7 +419,7 @@ export default function OutfitForm({
                     onClick={() => setStatus('hidden')}
                     className="rounded-xl border-slate-200 text-[12px] text-slate-600 hover:text-slate-950"
                   >
-                    Set Hidden
+                    Đặt Ẩn
                   </Button>
                 )}
                 {canUpdate && (
@@ -423,13 +430,13 @@ export default function OutfitForm({
                     onClick={() => setStatus('draft')}
                     className="rounded-xl border-slate-200 text-[12px] text-slate-600 hover:text-slate-950"
                   >
-                    Set Draft
+                    Đặt Nháp
                   </Button>
                 )}
               </div>
             )}
             <p className="text-[11px] text-slate-400">
-              Click &ldquo;Save Changes&rdquo; to apply status update.
+              Nhấn &ldquo;Lưu thay đổi&rdquo; để áp dụng cập nhật trạng thái.
             </p>
           </div>
         </Panel>
@@ -445,11 +452,11 @@ export default function OutfitForm({
           >
             {saving === 'fields'
               ? isCreate
-                ? 'Creating…'
-                : 'Saving…'
+                ? 'Đang tạo…'
+                : 'Đang lưu…'
               : isCreate
-                ? 'Create Outfit'
-                : 'Save Changes'}
+                ? 'Tạo Outfit'
+                : 'Lưu thay đổi'}
           </Button>
         </div>
       )}

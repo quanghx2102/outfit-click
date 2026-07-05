@@ -26,42 +26,63 @@ export default function OutfitCard({
     <article className="group">
       <Link
         href={href}
-        className="block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-4 rounded-2xl"
+        className="block rounded-[1.5rem] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-4"
+        style={{ '--tw-ring-color': '#9A7654' } as React.CSSProperties}
       >
-        {/* ── Image container ── */}
-        <div className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-slate-100 transition-all duration-500 group-hover:-translate-y-1.5 group-hover:shadow-xl">
+        {/* Image container */}
+        <div
+          className="relative aspect-[9/16] overflow-hidden transition-all duration-500 group-hover:-translate-y-1 group-hover:shadow-2xl"
+          style={{ borderRadius: '1.5rem', background: '#F3EEE7' }}
+        >
           {coverImageUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={coverImageUrl}
               alt={name}
-              className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.05]"
+              className="absolute inset-0 h-full w-full object-contain transition-transform duration-700 ease-out group-hover:scale-[1.03]"
             />
           ) : (
-            <div className="flex h-full items-center justify-center bg-slate-50">
-              <span className="text-xs text-slate-300">No image</span>
+            <div
+              className="flex h-full items-center justify-center"
+              style={{ background: 'linear-gradient(135deg, #F3EEE7 0%, #E8DED2 100%)' }}
+            >
+              <span className="text-xs" style={{ color: '#9A9289' }}>Chưa có ảnh</span>
             </div>
           )}
 
-          {/* Gradient overlay — always present for scrim, tag badge on hover */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+          {/* Gradient scrim */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
 
-          {/* Tag badge — bottom-left, appears on hover */}
+          {/* Tag badge — always visible at bottom */}
           {tag && (
-            <div className="absolute bottom-0 inset-x-0 px-3 pb-3 translate-y-2 opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
-              <span className="inline-flex items-center rounded-full bg-white/95 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-widest text-slate-700 shadow-sm backdrop-blur-sm">
+            <div className="absolute bottom-0 inset-x-0 px-3 pb-3">
+              <span
+                className="inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase"
+                style={{
+                  letterSpacing: '0.14em',
+                  background: 'rgba(255,255,255,0.92)',
+                  color: '#5C4432',
+                  backdropFilter: 'blur(8px)',
+                }}
+              >
                 {tag}
               </span>
             </div>
           )}
         </div>
 
-        {/* ── Card info ── */}
+        {/* Card info */}
         <div className="mt-3 px-0.5">
-          <h2 className="line-clamp-2 text-[13px] font-medium leading-snug text-slate-900 transition-colors group-hover:text-slate-500">
+          <h2
+            className="line-clamp-2 text-[13px] font-medium leading-snug transition-opacity group-hover:opacity-60"
+            style={{ color: '#111111' }}
+          >
             {name}
           </h2>
-          <p className="mt-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-300">
+          <p
+            className="mt-1 text-[10px] font-semibold uppercase"
+            style={{ letterSpacing: '0.18em', color: '#9A9289' }}
+          >
             {outfitCode}
           </p>
         </div>

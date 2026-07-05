@@ -75,7 +75,91 @@ export type UploadMediaResult = {
   fileUrl: string;
 };
 
+export type MediaAssetListItem = {
+  id: string;
+  entityType: string;
+  entityId: string;
+  mediaType: string;
+  fileUrl: string;
+  fileKey: string;
+  mimeType: string | null;
+  fileSize: string | null;
+  createdAt: Date;
+  uploaderName: string | null;
+};
+
+export type ListMediaAssetsResult = {
+  items: MediaAssetListItem[];
+  total: number;
+};
+
+// Thrown when the requested media asset does not exist.
+// Route handler maps this to 404.
+export class MediaAssetNotFoundError extends Error {
+  readonly status = 404;
+  constructor(message: string) {
+    super(message);
+    this.name = 'MediaAssetNotFoundError';
+  }
+}
+
 // ─── Service ─────────────────────────────────────────────────────────────────
+
+export async function listMediaAssets(input: {
+  page: number;
+  limit: number;
+}): Promise<ListMediaAssetsResult> {
+  const { page, limit } = input;
+  const skip = (page - 1) * limit;
+
+  const [rows, total] = await Promise.all([
+    prisma.mediaAsset.findMany({
+      orderBy: { createdAt: 'desc' },
+      skip,
+      take: limit,
+      include: { uploader: { select: { name: true } } },
+    }),
+    prisma.mediaAsset.count(),
+  ]);
+
+  return {
+    items: rows.map((row) => ({
+      id: row.id,
+      entityType: row.entityType,
+      entityId: row.entityId,
+      mediaType: row.mediaType,
+      fileUrl: row.fileUrl,
+      fileKey: row.fileKey,
+      mimeType: row.mimeType,
+      fileSize: row.fileSize !== null ? row.fileSize.toString() : null,
+      createdAt: row.createdAt,
+      uploaderName: row.uploader?.name ?? null,
+    })),
+    total,
+  };
+}
+
+// Deletes a media asset: removes the file from R2, then deletes the DB record.
+// mockupImageUrl is nullable and is cleared if it still points at this file.
+// coverImageUrl is NOT NULL on Outfit, so it is left as-is (per 09-storage-media.md,
+// callers are expected to upload a replacement cover before/after removing the old asset).
+export async function deleteMediaAsset(mediaAssetId: string): Promise<void> {
+  const asset = await prisma.mediaAsset.findUnique({ where: { id: mediaAssetId } });
+  if (!asset) throw new MediaAssetNotFoundError(`Media asset not found: ${mediaAssetId}`);
+
+  await deleteFromR2(asset.fileKey);
+
+  await prisma.$transaction(async (tx) => {
+    await tx.mediaAsset.delete({ where: { id: mediaAssetId } });
+
+    if (asset.mediaType === MEDIA_TYPE.PRODUCT_MOCKUP) {
+      await tx.product.updateMany({
+        where: { id: asset.entityId, mockupImageUrl: asset.fileUrl },
+        data: { mockupImageUrl: null },
+      });
+    }
+  });
+}
 
 export async function uploadMediaAsset(input: UploadMediaInput): Promise<UploadMediaResult> {
   const { fileBuffer, mimeType, fileSize, entityType, entityId, mediaType, uploadedBy } = input;

@@ -39,6 +39,8 @@ export const env = {
       .filter(Boolean),
     affiliateId: optionalEnv('MYCOLLECTION_AFFILIATE_ID'),
     affiliateUserId: optionalEnv('MYCOLLECTION_AFFILIATE_USER_ID'),
+    uuId: optionalEnv('MYCOLLECTION_UUID'),
+    deviceId: optionalEnv('MYCOLLECTION_DEVICE_ID'),
     cid: optionalEnv('MYCOLLECTION_CID', 'vn'),
     language: optionalEnv('MYCOLLECTION_LANGUAGE', 'vi'),
   },

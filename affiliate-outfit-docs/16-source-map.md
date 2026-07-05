@@ -46,6 +46,14 @@ Bản đồ source code để AI/dev biết file/folder nào phục vụ chức 
 | `/api/cron/sync-products` | `src/app/api/cron/sync-products/route.ts` | GET | Cron sync products từ API |
 | `/api/manager/products` | `src/app/api/manager/products/route.ts` | GET | Danh sách products — auth + scope check + filter/pagination (thêm groupId, hasMockup, hasProductDna) |
 | `/api/manager/products/sync` | `src/app/api/manager/products/sync/route.ts` | POST | Manual sync từ Manager — nhận urlSuffix+groupId, gọi API, upsert, ghi sync_log; permission: sync.run |
+| `/api/manager/products/sync-by-url-suffix` | `src/app/api/manager/products/sync-by-url-suffix/route.ts` | POST | Sync tất cả products bằng urlSuffix duy nhất — tự discover groups qua storefrontGroupList, sync từng group; permission: sync.run |
+| `/api/manager/users` | `src/app/api/manager/users/route.ts` | GET, POST | List users (users.view) + Create user (users.create) |
+| `/api/manager/users/[id]` | `src/app/api/manager/users/[id]/route.ts` | GET, PATCH | Get user detail + Update name/email/status (users.update) |
+| `/api/manager/users/[id]/roles` | `src/app/api/manager/users/[id]/roles/route.ts` | PUT | Replace all roles for user (users.update) |
+| `/api/manager/users/[id]/password` | `src/app/api/manager/users/[id]/password/route.ts` | POST | Reset user password (users.update) |
+| `/api/manager/roles` | `src/app/api/manager/roles/route.ts` | GET, POST | List roles + all permissions (roles.view) + Create role (roles.manage) |
+| `/api/manager/roles/[id]` | `src/app/api/manager/roles/[id]/route.ts` | GET, PATCH | Get role detail + Update name/description/status (roles.manage) |
+| `/api/manager/roles/[id]/permissions` | `src/app/api/manager/roles/[id]/permissions/route.ts` | PUT | Replace all permissions for role (roles.manage) |
 | `/api/manager/products/[id]` | `src/app/api/manager/products/[id]/route.ts` | GET, PATCH | Lấy (?rawJson=1 → raw API JSON) / cập nhật product (DNA, mockupImageUrl, status) — auth + scope + per-field permission |
 | `/api/manager/products/[id]/mockup` | `src/app/api/manager/products/[id]/mockup/route.ts` | POST | Upload mockup image → R2 → update product.mockupImageUrl + ghi media_asset; permission: media.upload + products.upload_mockup |
 | `/api/manager/outfits` | `src/app/api/manager/outfits/route.ts` | GET, POST | Danh sách outfits (GET); Tạo outfit mới (POST, multipart) — auth + permission + R2 upload |
@@ -101,11 +109,15 @@ Bản đồ source code để AI/dev biết file/folder nào phục vụ chức 
 | `src/server/auth/auth.service.ts` | TASK 3.1 | ✅ done | `loginUser`, `getUserById`, `SafeUser` type — không expose passwordHash |
 | `src/server/products/product.mapper.ts` | TASK 4.3 | ✅ done | `mapApiItemToProductUpsertData()` — map MyCollection API item → `ProductUpsertData` cho Prisma upsert |
 | `src/server/products/product.repository.ts` | TASK 4.3 | ✅ done | `upsertProductFromSource()` — upsert theo unique (urlSuffix, externalLinkId), preserve mockupImageUrl/productDna |
-| `src/server/products/product.service.ts` | TASK 6.1–6.2, BACKEND-MVP | ✅ done | `listProducts()` (+ groupId/hasMockup/hasProductDna filter), `getDistinctUrlSuffixes()`, `getProductById()`, `updateProductFields()` (+ mockupImageUrl), `listProductsForPicker()`, `getProductRawJson()` |
-| `src/server/outfits/outfit.service.ts` | TASK 7.2–7.4, 8.1–8.2, 10.2, 10.4, BACKEND-MVP | ✅ done | `listOutfits()`, `getDistinctStyles()`, `getDistinctOutfitTypes()`; `createOutfit()`, `getOutfitById()`, `updateOutfitFields()`; `getOutfitProducts()`, `addProductToOutfit()`, `removeProductFromOutfit()`; `countOutfitProducts()`; `validateOutfitForPublish()` (name/cover/products/link check); `listPublicOutfits()`; `getPublicOutfitDetail()`; `getActiveOutfitsForSitemap()`; `getRelatedOutfits()` |
+| `src/server/products/product.service.ts` | TASK 6.1–6.2, BACKEND-MVP, MANAGER-FULL | ✅ done | `listProducts()` (+ groupId/hasMockup/hasProductDna filter), `getDistinctUrlSuffixes()`, `getDistinctGroupIds()`, `getProductById()`, `updateProductFields()` (+ mockupImageUrl), `listProductsForPicker()`, `getProductRawJson()` |
+| `src/server/outfits/outfit.service.ts` | TASK 7.2–7.4, 8.1–8.2, 10.2, 10.4, BACKEND-MVP, PUBLIC-OUTFITS-SEARCH-FILTER | ✅ done | `listOutfits()`, `getDistinctStyles()` (trả kèm `slug`), `getDistinctOutfitTypes()`; `createOutfit()`, `getOutfitById()`, `updateOutfitFields()`; `getOutfitProducts()`, `addProductToOutfit()`, `removeProductFromOutfit()`; `countOutfitProducts()`; `validateOutfitForPublish()` (name/cover/products/link check); `listPublicOutfits()` (+ `keyword`/`styleSlug` filter, trả kèm `style`); `getPublicOutfitDetail()`; `getActiveOutfitsForSitemap()`; `getRelatedOutfits()` |
 | `src/server/sync/mycollection.client.ts` | TASK 4.1 | ✅ done | `fetchStorefrontGroupProductList()` — HTTP client gọi MyCollection GQL API, pagination + timeout + error handling |
+| `src/server/sync/mycollection-group-list.client.ts` | MANAGER-FULL | ✅ done | `fetchStorefrontGroupList()` — HTTP client gọi storefrontGroupList API để lấy all groups của urlSuffix |
 | `src/server/sync/sync-products.service.ts` | TASK 4.4 | ✅ done | `syncProducts()` — full pipeline: lock check, pagination, upsert, mark missing, sync_logs |
+| `src/server/sync/sync-by-url-suffix.service.ts` | MANAGER-FULL | ✅ done | `syncProductsByUrlSuffix()` — discover groups via storefrontGroupList, sync each group, aggregate result |
 | `src/server/sync/sync-log.service.ts` | TASK 11.3 | ✅ done | `listSyncLogs()` — query sync_logs với filter status/date, pagination; trả `ListSyncLogsResult` |
+| `src/server/users/user.service.ts` | UI-4.4, MANAGER-FULL | ✅ done | `listUsers()`, `getUserDetail()`, `createUser()`, `updateUser()`, `setUserStatus()`, `resetUserPassword()`, `assignRolesToUser()` |
+| `src/server/roles/role.service.ts` | UI-4.4, MANAGER-FULL | ✅ done | `listRolesWithPermissions()`, `getRoleById()`, `listAllPermissions()`, `createRole()`, `updateRole()`, `setRolePermissions()` |
 | `src/server/tracking/view-tracking.service.ts` | TASK 9.2 | ✅ done | `OutfitViewLogInput` type + `recordOutfitView()` — ghi row vào `outfit_view_logs` |
 | `src/server/tracking/click-tracking.service.ts` | TASK 9.3 | ✅ done | `resolveClickRedirect()` validate outfit+product, `ClickLogInput` type, `recordClick()` — ghi `click_logs` |
 | `src/server/tracking/anti-spam.service.ts` | TASK 9.4 | ✅ done | `AntiSpamInput`, `AntiSpamResult` types + `checkAntiSpam()` — manager preview / bot UA / duplicate click 30s / too many clicks per session |
@@ -119,26 +131,26 @@ Bản đồ source code để AI/dev biết file/folder nào phục vụ chức 
 | File | Task | Mô tả |
 |---|---|---|
 | `src/components/ui/` | — | shadcn/ui components (button, input, label, card, table, dialog, dropdown-menu, select, badge, tabs, textarea) |
-| `src/components/public/OutfitCard.tsx` | TASK 8.1 / UI-2.1 | ✅ done — Card hiển thị outfit trong public list; 4:5 ratio, rounded-2xl, border, hover; link → `/outfit/{slug}-{code.toLowerCase()}`; optional style/type badges; missing image fallback |
-| `src/components/public/ProductClickCard.tsx` | TASK 8.2 / UI-2.1 | ✅ done — Card sản phẩm: ảnh + tên → link `/go/{outfitCode}/{productId}`; rounded-2xl, border hover; lazy load; alt text per SEO spec; missing image fallback |
+| `src/components/public/OutfitCard.tsx` | TASK 8.1 / UI-2.1 / UI-UPGRADE | ✅ done — Card outfit: 4:5 ratio, rounded-[1.5rem], warm ivory bg (#F3EEE7), tag badge always visible, gradient scrim, outfit code #9A9289; link → `/outfit/{slug}-{code.toLowerCase()}` |
+| `src/components/public/ProductClickCard.tsx` | TASK 8.2 / UI-2.1 / UI-UPGRADE | ✅ done — Card sản phẩm: warm ivory bg, "Tap to view" overlay on hover, gradient scrim; link `/go/{outfitCode}/{productId}` |
 | `src/components/public/TrackOutfitView.tsx` | TASK 9.2 | ✅ done — Client Component: fire-and-forget POST `/api/tracking/outfit-view`; đọc referrer + UTM từ browser |
-| `src/components/public/PublicHeader.tsx` | UI-2.1 | ✅ done — Client Component: sticky header 64px, logo left → home, nav right (Outfit link), active state dùng `usePathname` |
-| `src/components/public/PublicFooter.tsx` | UI-2.1 | ✅ done — Server Component: footer nhẹ, site name + nav links + copyright |
+| `src/components/public/PublicHeader.tsx` | UI-2.1 / UI-UPGRADE | ✅ done — Client Component: sticky 72px, warm ivory bg rgba(250,247,242,0.92), backdrop-blur, nav Outfits/Styles/New Looks, Explore CTA (#9A7654), Search icon |
+| `src/components/public/PublicFooter.tsx` | UI-2.1 / UI-UPGRADE | ✅ done — Server Component: fashion footer, brand column + browse nav, #FAF7F2 bg, border #E8DED2 |
 | `src/components/public/OutfitGrid.tsx` | UI-2.1 | ✅ done — Server Component: responsive grid 2/3/4 columns (mobile/tablet/desktop), wrapper cho OutfitCard |
-| `src/components/public/OutfitHero.tsx` | UI-2.1 | ✅ done — Server Component: breadcrumb nav + cover image (4:5, rounded-2xl) + title/code/badges/description cho outfit detail page |
+| `src/components/public/OutfitHero.tsx` | UI-2.1 / UI-UPGRADE | ✅ done — Server Component: eyebrow "OUTFIT CODE" champagne, code badge, serif H1, tag border badges, Shopee note; 2-col lookbook layout |
 | `src/components/public/SeoContentBlock.tsx` | UI-2.1 | ✅ done — Server Component: SEO text section (heading + body) dùng ở cuối list/detail page |
 | `src/components/public/RelatedOutfits.tsx` | UI-2.1 | ✅ done — Server Component: section "Outfit liên quan", dùng OutfitGrid + OutfitCard, ẩn nếu rỗng |
 | `src/app/(public)/layout.tsx` | UI-2.1 | ✅ done — Server Layout: wrap tất cả public pages với PublicHeader + PublicFooter |
-| `src/components/manager/ManagerShell.tsx` | UI-3.1 | ✅ done — Server Component: shell wrapper bọc ManagerSidebar + ManagerTopbar + content, nhận `user` prop từ layout |
-| `src/components/manager/ManagerSidebar.tsx` | UI-3.1 | ✅ done — Server Component: sidebar 240px, logo link → dashboard, ManagerNav, user info + LogoutButton |
-| `src/components/manager/ManagerTopbar.tsx` | UI-3.1 | ✅ done — Server Component: topbar 56px, user avatar initial + name ở phải |
-| `src/components/manager/PageHeader.tsx` | UI-3.1 | ✅ done — Server Component: title (text-2xl) + optional description + optional actions slot |
+| `src/components/manager/ManagerShell.tsx` | UI-3.1 / UI-UPGRADE | ✅ done — Server Component: shell wrapper, bg #F6F7F9, padding 32px |
+| `src/components/manager/ManagerSidebar.tsx` | UI-3.1 / UI-UPGRADE | ✅ done — Server Component: sidebar 260px dark (#111827), logo white, ManagerNav, rounded-xl user block |
+| `src/components/manager/ManagerTopbar.tsx` | UI-3.1 / UI-UPGRADE | ✅ done — Server Component: topbar 64px white, border #E5E7EB, initials avatar |
+| `src/components/manager/PageHeader.tsx` | UI-3.1 / UI-UPGRADE | ✅ done — Server Component: title text-2xl bold #111827 + description #6B7280 + actions slot; no bottom border |
 | `src/components/manager/StatusBadge.tsx` | UI-3.1 | ✅ done — Pure component: map status string → colored rounded-full badge; covers product/outfit/sync/user statuses từ constants |
 | `src/components/manager/SearchFilterBar.tsx` | UI-3.1 | ✅ done — Server Component: flex-wrap layout wrapper cho search + filter inputs |
 | `src/components/manager/EmptyState.tsx` | UI-3.1 | ✅ done — Server Component: empty data UI với icon placeholder, title, optional description + action slot |
 | `src/components/manager/LoadingState.tsx` | UI-3.1 | ✅ done — Server Component: skeleton rows (animate-pulse), configurable `rows` prop |
 | `src/components/manager/ConfirmDialog.tsx` | UI-3.1 | ✅ done — Client Component: controlled Dialog cho dangerous actions (hide/delete/inactive); variant danger → destructive button |
-| `src/components/manager/ProductTable.tsx` | TASK 6.1–6.2 | ✅ done — Table hiển thị image/name(link→detail)/source/status/DNA/mockup/lastSynced |
+| `src/components/manager/ProductTable.tsx` | TASK 6.1–6.2 / UI-UPGRADE | ✅ done — Table hiển thị thumbnail 56×56/name/source/group/mockup(Yes·No badge)/DNA/status/lastSynced/actions; row height 72px; dùng plain table |
 | `src/components/manager/ProductFilters.tsx` | TASK 6.1 | ✅ done — Client Component: keyword search + urlSuffix + status filter, URL-based state |
 | `src/components/manager/ProductEditForm.tsx` | TASK 6.2 | ✅ done — Client Component: DNA textarea, status radio, mockup upload — permission-gated |
 | `src/components/manager/OutfitTable.tsx` | TASK 7.2 | ✅ done — Table hiển thị cover/name(link→detail)/code/status/productCount/publishedAt |
@@ -151,6 +163,11 @@ Bản đồ source code để AI/dev biết file/folder nào phục vụ chức 
 | `src/components/manager/LogoutButton.tsx` | TASK 3.3 | ✅ done — Client Component: POST /api/auth/logout → redirect login |
 | `src/components/manager/ManagerNav.tsx` | TASK 3.3 | ✅ done — Client Component: sidebar nav với active state dùng usePathname |
 | `src/app/manager/(protected)/layout.tsx` | TASK 3.3 / UI-3.1 | ✅ done — Async Server layout: requireAuth → truyền user vào ManagerShell |
+| `src/components/manager/UserFormDialog.tsx` | MANAGER-FULL | ✅ done — Client Component: modal create/edit user (name, email, password, role checkboxes) |
+| `src/components/manager/UserActions.tsx` | MANAGER-FULL | ✅ done — `ResetPasswordButton` + `ToggleUserStatusButton` — Client Components |
+| `src/components/manager/RoleFormDialog.tsx` | MANAGER-FULL | ✅ done — Client Component: modal create/edit role (name, code, description, permission picker by module) |
+| `src/components/manager/SyncByUrlSuffixPanel.tsx` | MANAGER-FULL / UI-UPGRADE | ✅ done — Client Component: inline card (không còn dialog), form + result summary cạnh nhau, 5-stat row, group breakdown table |
+| `src/components/manager/RawJsonViewer.tsx` | MANAGER-FULL | ✅ done — Client Component: "View Raw JSON" button → lazy-fetch `?rawJson=1` → dark bg pre-formatted viewer |
 
 ---
 

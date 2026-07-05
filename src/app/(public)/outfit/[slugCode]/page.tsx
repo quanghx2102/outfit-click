@@ -55,7 +55,7 @@ export default async function OutfitDetailPage({ params }: Props) {
     image: outfit.coverImageUrl,
     mainEntity: {
       '@type': 'ItemList',
-      name: `Danh sách sản phẩm trong outfit ${outfit.outfitCode}`,
+      name: `Items in outfit ${outfit.outfitCode}`,
       itemListElement: outfit.products.map((p, i) => ({
         '@type': 'ListItem',
         position: i + 1,
@@ -72,7 +72,7 @@ export default async function OutfitDetailPage({ params }: Props) {
       {
         '@type': 'ListItem',
         position: 1,
-        name: 'Outfit',
+        name: 'Outfits',
         item: `${baseUrl}/outfits`,
       },
       {
@@ -96,73 +96,81 @@ export default async function OutfitDetailPage({ params }: Props) {
         dangerouslySetInnerHTML={{ __html: safeJsonLd(breadcrumbJsonLd) }}
       />
 
-      <main className="mx-auto w-full max-w-5xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
-        {/* Hero — cover + info */}
-        <OutfitHero
-          name={outfit.name}
-          outfitCode={outfit.outfitCode}
-          coverImageUrl={outfit.coverImageUrl}
-          description={outfit.description}
-          style={outfit.style}
-          outfitType={outfit.outfitType}
-        />
+      <main
+        className="w-full"
+        style={{ background: '#FAF7F2' }}
+      >
+        {/* Hero section */}
+        <div className="mx-auto w-full max-w-5xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
+          <OutfitHero
+            name={outfit.name}
+            outfitCode={outfit.outfitCode}
+            coverImageUrl={outfit.coverImageUrl}
+            description={outfit.description}
+            style={outfit.style}
+            outfitType={outfit.outfitType}
+          />
+        </div>
 
-        {/* ── Products section ── */}
+        {/* Items in this outfit */}
         {outfit.products.length > 0 ? (
-          <section aria-labelledby="products-heading" className="mt-20">
-            {/* Section header */}
-            <div className="mb-8 flex items-center gap-4">
-              <div className="h-px flex-1 bg-slate-100" />
-              <div className="flex items-center gap-3">
+          <section
+            aria-labelledby="products-heading"
+            className="border-t py-14"
+            style={{ borderColor: '#E8DED2' }}
+          >
+            <div className="mx-auto w-full max-w-5xl px-4 sm:px-6 lg:px-8">
+              {/* Section title */}
+              <div className="mb-10 flex items-center gap-4">
                 <h2
                   id="products-heading"
-                  className="text-xs font-bold uppercase tracking-[0.22em] text-slate-400"
+                  className="text-xl font-bold"
+                  style={{ color: '#111111' }}
                 >
-                  Items in this outfit
+                  Sản phẩm trong outfit này
                 </h2>
-                <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-500">
+                <span
+                  className="rounded-full px-2.5 py-0.5 text-xs font-semibold"
+                  style={{ background: '#F3EEE7', color: '#9A7654' }}
+                >
                   {outfit.products.length}
                 </span>
               </div>
-              <div className="h-px flex-1 bg-slate-100" />
-            </div>
 
-            <div className="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 sm:gap-x-5 md:grid-cols-4 lg:gap-x-6">
-              {outfit.products.map((product) => (
-                <ProductClickCard
-                  key={product.id}
-                  name={product.name}
-                  displayImageUrl={product.displayImageUrl}
-                  redirectPath={product.redirectPath}
-                  outfitCode={outfit.outfitCode}
-                />
-              ))}
+              <div className="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 sm:gap-x-5 md:grid-cols-4 lg:gap-x-6">
+                {outfit.products.map((product) => (
+                  <ProductClickCard
+                    key={product.id}
+                    name={product.name}
+                    displayImageUrl={product.displayImageUrl}
+                    redirectPath={product.redirectPath}
+                    outfitCode={outfit.outfitCode}
+                  />
+                ))}
+              </div>
             </div>
           </section>
         ) : (
-          <div className="mt-16 flex flex-col items-center py-12 text-center">
-            <p className="text-sm text-slate-400">No items in this outfit yet.</p>
+          <div className="mx-auto max-w-5xl px-4 py-16 text-center sm:px-6 lg:px-8">
+            <p className="text-sm" style={{ color: '#9A9289' }}>Outfit này chưa có sản phẩm nào.</p>
           </div>
         )}
 
-        {/* ── How to style block (uses description if present) ── */}
-        {outfit.description && outfit.products.length > 0 && (
-          <section className="mt-16 rounded-2xl border border-slate-100 bg-slate-50/70 px-8 py-10 text-center">
-            <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.25em] text-slate-300">
-              How to style
-            </p>
-            <p className="text-sm leading-relaxed text-slate-500">{outfit.description}</p>
-          </section>
-        )}
-
-        {/* ── Related outfits ── */}
-        <RelatedOutfits outfits={relatedOutfits} />
+        {/* Related outfits */}
+        <div
+          className="border-t"
+          style={{ borderColor: '#E8DED2' }}
+        >
+          <div className="mx-auto w-full max-w-5xl px-4 sm:px-6 lg:px-8">
+            <RelatedOutfits outfits={relatedOutfits} />
+          </div>
+        </div>
 
         <SeoContentBlock
-          heading={`${outfit.style?.name ?? outfit.outfitType?.name ?? 'Curated'} outfit inspiration`}
+          heading={`Ý tưởng phối đồ ${outfit.style?.name ?? outfit.outfitType?.name ?? 'tuyển chọn'}`}
           body={
             outfit.description ??
-            'Explore carefully curated outfits across styles. Click any item to discover it further.'
+            'Khám phá các outfit được tuyển chọn theo nhiều phong cách. Chạm vào sản phẩm để xem thêm.'
           }
         />
       </main>

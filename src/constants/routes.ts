@@ -12,6 +12,8 @@ export const MANAGER_ROUTES = {
   OUTFITS: "/manager/outfits",
   USERS: "/manager/users",
   ROLES: "/manager/roles",
+  TAXONOMY: "/manager/taxonomy",
+  MEDIA: "/manager/media",
   ANALYTICS: "/manager/analytics",
   SYNC_LOGS: "/manager/sync-logs",
 } as const;

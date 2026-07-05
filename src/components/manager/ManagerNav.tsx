@@ -10,6 +10,8 @@ import {
   RefreshCw,
   Users,
   Shield,
+  Tags,
+  ImageIcon,
   type LucideIcon,
 } from 'lucide-react';
 import { MANAGER_ROUTES } from '@/constants/routes';
@@ -21,13 +23,15 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { label: 'Dashboard', href: MANAGER_ROUTES.DASHBOARD, icon: LayoutDashboard },
-  { label: 'Products', href: MANAGER_ROUTES.PRODUCTS, icon: ShoppingBag },
-  { label: 'Outfits', href: MANAGER_ROUTES.OUTFITS, icon: Shirt },
-  { label: 'Analytics', href: MANAGER_ROUTES.ANALYTICS, icon: BarChart2 },
-  { label: 'Sync Logs', href: MANAGER_ROUTES.SYNC_LOGS, icon: RefreshCw },
-  { label: 'Users', href: MANAGER_ROUTES.USERS, icon: Users },
-  { label: 'Roles', href: MANAGER_ROUTES.ROLES, icon: Shield },
+  { label: 'Tổng quan', href: MANAGER_ROUTES.DASHBOARD, icon: LayoutDashboard },
+  { label: 'Sản phẩm', href: MANAGER_ROUTES.PRODUCTS, icon: ShoppingBag },
+  { label: 'Outfit', href: MANAGER_ROUTES.OUTFITS, icon: Shirt },
+  { label: 'Phong cách & Loại', href: MANAGER_ROUTES.TAXONOMY, icon: Tags },
+  { label: 'Media', href: MANAGER_ROUTES.MEDIA, icon: ImageIcon },
+  { label: 'Phân tích', href: MANAGER_ROUTES.ANALYTICS, icon: BarChart2 },
+  { label: 'Lịch sử đồng bộ', href: MANAGER_ROUTES.SYNC_LOGS, icon: RefreshCw },
+  { label: 'Nhân sự', href: MANAGER_ROUTES.USERS, icon: Users },
+  { label: 'Vai trò', href: MANAGER_ROUTES.ROLES, icon: Shield },
 ];
 
 function isActive(pathname: string, href: string): boolean {
@@ -47,16 +51,16 @@ export default function ManagerNav() {
           <Link
             key={item.href}
             href={item.href}
-            className={[
-              'flex items-center gap-3 rounded-lg px-3 py-2 text-[13px] transition-colors',
+            className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13px] transition-colors"
+            style={
               active
-                ? 'bg-slate-950 font-semibold text-white'
-                : 'font-medium text-slate-500 hover:bg-slate-50 hover:text-slate-900',
-            ].join(' ')}
+                ? { background: 'rgba(255,255,255,0.12)', color: '#FFFFFF', fontWeight: 600 }
+                : { color: 'rgba(255,255,255,0.55)', fontWeight: 500 }
+            }
           >
             <Icon
               size={15}
-              className={active ? 'text-white' : 'text-slate-400'}
+              style={{ color: active ? '#FFFFFF' : 'rgba(255,255,255,0.4)' }}
               strokeWidth={active ? 2.5 : 2}
             />
             {item.label}

@@ -8,15 +8,24 @@ interface ManagerSidebarProps {
 }
 
 export default function ManagerSidebar({ user }: ManagerSidebarProps) {
-  const initial = user.name.trim().charAt(0).toUpperCase();
+  const initials = user.name
+    .split(' ')
+    .map((w) => w[0])
+    .slice(0, 2)
+    .join('')
+    .toUpperCase();
 
   return (
-    <aside className="flex w-[240px] shrink-0 flex-col border-r border-slate-100 bg-white">
+    <aside
+      className="flex w-[260px] shrink-0 flex-col"
+      style={{ background: '#111827', minHeight: '100vh' }}
+    >
       {/* Logo / brand */}
-      <div className="flex h-14 items-center border-b border-slate-100 px-5">
+      <div className="flex h-16 items-center px-6" style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
         <Link
           href={MANAGER_ROUTES.DASHBOARD}
-          className="text-[11px] font-black uppercase tracking-[0.22em] text-slate-950 transition-opacity hover:opacity-60"
+          className="text-[11px] font-black uppercase transition-opacity hover:opacity-60"
+          style={{ letterSpacing: '0.22em', color: '#FFFFFF' }}
         >
           OutfitClick
         </Link>
@@ -28,17 +37,22 @@ export default function ManagerSidebar({ user }: ManagerSidebarProps) {
       </div>
 
       {/* User block */}
-      <div className="border-t border-slate-100 p-4">
-        <div className="mb-3 flex items-center gap-3">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-950 text-[11px] font-bold text-white">
-            {initial}
+      <div className="p-4" style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+        <div className="flex items-center gap-3 rounded-xl p-3" style={{ background: 'rgba(255,255,255,0.06)' }}>
+          <div
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[12px] font-bold text-white"
+            style={{ background: 'rgba(255,255,255,0.15)' }}
+          >
+            {initials}
           </div>
           <div className="min-w-0 flex-1">
-            <p className="truncate text-[13px] font-semibold text-slate-900">{user.name}</p>
-            <p className="truncate text-[11px] text-slate-400">{user.email}</p>
+            <p className="truncate text-[13px] font-semibold text-white">{user.name}</p>
+            <p className="truncate text-[11px]" style={{ color: 'rgba(255,255,255,0.45)' }}>{user.email}</p>
           </div>
         </div>
-        <LogoutButton />
+        <div className="mt-2">
+          <LogoutButton />
+        </div>
       </div>
     </aside>
   );

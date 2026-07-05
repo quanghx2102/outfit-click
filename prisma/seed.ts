@@ -63,6 +63,8 @@ const PERMISSION_DEFS: { code: string; name: string; module: string }[] = [
   { code: 'users.delete', name: 'Delete Users', module: 'users' },
   { code: 'roles.view', name: 'View Roles', module: 'roles' },
   { code: 'roles.manage', name: 'Manage Roles', module: 'roles' },
+  { code: 'taxonomy.view', name: 'View Styles & Outfit Types', module: 'taxonomy' },
+  { code: 'taxonomy.manage', name: 'Manage Styles & Outfit Types', module: 'taxonomy' },
   { code: 'products.view_all', name: 'View All Products', module: 'products' },
   { code: 'products.view_assigned', name: 'View Assigned Products', module: 'products' },
   { code: 'products.update', name: 'Update Products', module: 'products' },
@@ -125,6 +127,8 @@ const ROLE_PERMISSION_CODES: Record<string, string[]> = {
     'media.upload',
     'media.delete',
     'sync.view',
+    'taxonomy.view',
+    'taxonomy.manage',
   ],
   product_staff: [
     'dashboard.view_own',
