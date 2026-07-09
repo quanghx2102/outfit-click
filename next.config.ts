@@ -25,6 +25,10 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
+        hostname: "*.img.susercontent.com",
+      },
+      {
+        protocol: "https",
         hostname: "*.r2.dev",
       },
     ],
