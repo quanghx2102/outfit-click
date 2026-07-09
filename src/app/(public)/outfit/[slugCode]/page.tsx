@@ -1,6 +1,7 @@
 import { cache } from 'react';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { unstable_cache } from 'next/cache';
 import { getPublicOutfitDetail, getRelatedOutfits } from '@/server/outfits/outfit.service';
 import OutfitHero from '@/components/public/OutfitHero';
 import ProductClickCard from '@/components/public/ProductClickCard';
@@ -13,8 +14,19 @@ type Props = {
   params: Promise<{ slugCode: string }>;
 };
 
+// Cache outfit detail for 24 hours (86400s). Detail changes infrequently once published.
+export const revalidate = 86400;
+
 // Memoize per-request so generateMetadata and the page component share one DB call.
 const getOutfitDetailCached = cache(getPublicOutfitDetail);
+
+// Cached version of getRelatedOutfits with 24-hour TTL
+const getCachedRelatedOutfits = unstable_cache(
+  (currentId: string, styleSlug: string | null, outfitTypeSlug: string | null) =>
+    getRelatedOutfits(currentId, styleSlug, outfitTypeSlug),
+  ['related-outfits'],
+  { revalidate: 86400, tags: ['outfits'] }
+);
 
 /** Extract 6-char outfit code from URL segment `{slug}-{code}`. */
 function extractOutfitCode(slugCode: string): string {
@@ -37,7 +49,7 @@ export default async function OutfitDetailPage({ params }: Props) {
 
   if (!outfit) notFound();
 
-  const relatedOutfits = await getRelatedOutfits(
+  const relatedOutfits = await getCachedRelatedOutfits(
     outfit.id,
     outfit.style?.slug ?? null,
     outfit.outfitType?.slug ?? null,

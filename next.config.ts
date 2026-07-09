@@ -1,7 +1,30 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "*.supabase.co",
+      },
+      {
+        protocol: "https",
+        hostname: "*.cloudinary.com",
+      },
+      {
+        protocol: "https",
+        hostname: "*.shopee.sg",
+      },
+      {
+        protocol: "https",
+        hostname: "*.shopee.vn",
+      },
+      {
+        protocol: "https",
+        hostname: "**.img.shopeecdn.com",
+      },
+    ],
+  },
 };
 
 export default nextConfig;

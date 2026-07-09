@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import Link from 'next/link';
 
 export interface ProductClickCardProps {
@@ -27,12 +28,12 @@ export default function ProductClickCard({
           style={{ background: '#F3EEE7' }}
         >
           {displayImageUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
+            <Image
               src={displayImageUrl}
               alt={`${name} — outfit ${outfitCode}`}
-              loading="lazy"
-              className="absolute inset-0 h-full w-full object-contain transition-transform duration-700 ease-out group-hover:scale-[1.03]"
+              fill
+              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+              className="object-contain transition-transform duration-700 ease-out group-hover:scale-[1.03]"
             />
           ) : (
             <div

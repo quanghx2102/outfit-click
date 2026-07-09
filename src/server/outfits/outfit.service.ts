@@ -1,3 +1,4 @@
+import { unstable_cache } from 'next/cache';
 import { prisma } from '@/lib/db';
 import type { Prisma } from '@prisma/client';
 import type { OutfitStatus } from '@/constants/status';
@@ -157,23 +158,33 @@ export async function listOutfits(
   };
 }
 
-export async function getDistinctStyles(): Promise<StyleOption[]> {
-  const rows = await prisma.style.findMany({
-    where: { status: 'active', deletedAt: null },
-    select: { id: true, name: true, slug: true },
-    orderBy: { name: 'asc' },
-  });
-  return rows;
-}
+// Cached for 30 minutes (1800s). Taxonomy data (styles/types) changes infrequently.
+export const getDistinctStyles = unstable_cache(
+  async (): Promise<StyleOption[]> => {
+    const rows = await prisma.style.findMany({
+      where: { status: 'active', deletedAt: null },
+      select: { id: true, name: true, slug: true },
+      orderBy: { name: 'asc' },
+    });
+    return rows;
+  },
+  ['styles-active'],
+  { revalidate: 1800, tags: ['taxonomy'] }
+);
 
-export async function getDistinctOutfitTypes(): Promise<OutfitTypeOption[]> {
-  const rows = await prisma.outfitType.findMany({
-    where: { status: 'active', deletedAt: null },
-    select: { id: true, name: true },
-    orderBy: { name: 'asc' },
-  });
-  return rows;
-}
+// Cached for 30 minutes (1800s). Taxonomy data (styles/types) changes infrequently.
+export const getDistinctOutfitTypes = unstable_cache(
+  async (): Promise<OutfitTypeOption[]> => {
+    const rows = await prisma.outfitType.findMany({
+      where: { status: 'active', deletedAt: null },
+      select: { id: true, name: true },
+      orderBy: { name: 'asc' },
+    });
+    return rows;
+  },
+  ['outfit-types-active'],
+  { revalidate: 1800, tags: ['taxonomy'] }
+);
 
 // ─── Detail select & mapper ───────────────────────────────────────────────────
 

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse, after } from 'next/server';
+import { unstable_cache } from 'next/cache';
 import { getOrCreateTrackingIds } from '@/lib/tracking';
 import { hashIp } from '@/lib/ip-hash';
 import { getSession } from '@/lib/auth';
@@ -12,6 +13,15 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 
 type Params = { outfitCode: string; productId: string };
 
+// Cached version of resolveClickRedirect with 10-minute TTL (600s).
+// Redirects change only when product/outfit status changes, which is infrequent.
+const getCachedClickRedirect = unstable_cache(
+  (outfitCode: string, productId: string) =>
+    resolveClickRedirect(outfitCode, productId),
+  ['click-redirect'],
+  { revalidate: 600, tags: ['redirect'] }
+);
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<Params> },
@@ -23,7 +33,7 @@ export async function GET(
     return NextResponse.redirect(new URL('/outfits', request.url), 302);
   }
 
-  const result = await resolveClickRedirect(outfitCode, productId);
+  const result = await getCachedClickRedirect(outfitCode, productId);
 
   if (!result.valid) {
     return NextResponse.redirect(new URL(result.fallbackUrl, request.url), 302);

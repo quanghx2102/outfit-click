@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import Link from 'next/link';
 import { PUBLIC_ROUTES } from '@/constants/routes';
 
@@ -46,11 +47,12 @@ export default function OutfitHero({
           style={{ background: '#F3EEE7' }}
         >
           {coverImageUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
+            <Image
               src={coverImageUrl}
               alt={coverAlt}
-              className="absolute inset-0 h-full w-full object-contain"
+              fill
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 40vw"
+              className="object-contain"
             />
           ) : (
             <div

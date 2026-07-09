@@ -152,6 +152,8 @@ model Outfit {
   @@index([styleId])
   @@index([outfitTypeId])
   @@index([publishedAt])
+  @@index([status, publishedAt, styleId])
+  @@index([outfitCode, status, deletedAt])
   @@map("outfits")
 }
 
@@ -279,6 +281,7 @@ model Style {
 
   outfits Outfit[]
 
+  @@index([status, deletedAt])
   @@map("styles")
 }
 
@@ -293,6 +296,7 @@ model OutfitType {
 
   outfits Outfit[]
 
+  @@index([status, deletedAt])
   @@map("outfit_types")
 }
 

@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import Link from 'next/link';
 
 export interface OutfitCardProps {
@@ -35,11 +36,12 @@ export default function OutfitCard({
           style={{ borderRadius: '1.5rem', background: '#F3EEE7' }}
         >
           {coverImageUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
+            <Image
               src={coverImageUrl}
               alt={name}
-              className="absolute inset-0 h-full w-full object-contain transition-transform duration-700 ease-out group-hover:scale-[1.03]"
+              fill
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+              className="object-contain transition-transform duration-700 ease-out group-hover:scale-[1.03]"
             />
           ) : (
             <div

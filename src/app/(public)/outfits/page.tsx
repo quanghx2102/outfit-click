@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { unstable_cache } from 'next/cache';
 import { listPublicOutfits, getDistinctStyles } from '@/server/outfits/outfit.service';
 import OutfitCard from '@/components/public/OutfitCard';
 import OutfitGrid from '@/components/public/OutfitGrid';
@@ -7,6 +8,24 @@ import SeoContentBlock from '@/components/public/SeoContentBlock';
 import { SEO_CONFIG, PUBLIC_ROUTES } from '@/constants/routes';
 
 const PAGE_LIMIT = 20;
+
+// Cache for 1 hour (3600s). Public outfit listings change infrequently.
+export const revalidate = 3600;
+
+// Cached version of getDistinctStyles with 60-minute TTL
+const getCachedDistinctStyles = unstable_cache(
+  () => getDistinctStyles(),
+  ['distinct-styles'],
+  { revalidate: 3600, tags: ['styles'] }
+);
+
+// Cached version of listPublicOutfits with 60-minute TTL
+const getCachedPublicOutfits = unstable_cache(
+  (page: number, limit: number, keyword?: string, styleSlug?: string) =>
+    listPublicOutfits({ page, limit, keyword, styleSlug }),
+  ['public-outfits'],
+  { revalidate: 3600, tags: ['outfits'] }
+);
 
 export const metadata: Metadata = {
   title: `Outfit Lookbook | ${SEO_CONFIG.SITE_NAME}`,
@@ -24,8 +43,8 @@ export default async function OutfitsPage({ searchParams }: PageProps) {
   const styleSlug = style?.trim() || undefined;
 
   const [{ items, total }, styleOptions] = await Promise.all([
-    listPublicOutfits({ page, limit: PAGE_LIMIT, keyword, styleSlug }),
-    getDistinctStyles(),
+    getCachedPublicOutfits(page, PAGE_LIMIT, keyword, styleSlug),
+    getCachedDistinctStyles(),
   ]);
   const totalPages = Math.ceil(total / PAGE_LIMIT);
   const activeStyle = styleOptions.find((s) => s.slug === styleSlug);
