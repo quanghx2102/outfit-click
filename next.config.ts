@@ -23,6 +23,10 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "**.img.shopeecdn.com",
       },
+      {
+        protocol: "https",
+        hostname: "*.r2.dev",
+      },
     ],
   },
 };
